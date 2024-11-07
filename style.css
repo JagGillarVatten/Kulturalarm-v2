@@ -1,0 +1,272 @@
+:root {
+    --primary-color: #5B52E5;
+    --secondary-color: #4A90E2;
+    --background-color: #1A1B1E;
+    --text-color: #f0f0f0;
+    --accent-color: #E55B9E;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(108, 99, 255, 0.1);
+    --shadow-lg: 0 8px 16px rgba(74, 144, 226, 0.1);
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(45deg, #1A1B1E 0%, #242529 100%);
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px;
+    background-color: rgba(255, 255, 255, 0.02);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+.main-content {
+    display: flex;
+    gap: 32px;
+}
+
+.left-panel {
+    flex: 1;
+}
+
+.right-panel {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 16px;
+        padding: 24px;
+    }
+    
+    .main-content {
+        flex-direction: column;
+    }
+}
+
+.clock-container {
+    margin-bottom: 40px;
+}
+
+.analog-clock {
+    width: 12rem;
+    height: 12rem;
+    border: 3px solid var(--accent-color);
+    border-radius: 50%;
+    margin: 0 auto;
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: var(--shadow-md);
+}
+
+.clock-numbers {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.number {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transform: rotate(var(--rotation));
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.clock-hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom;
+    background: var(--text-color);
+    border-radius: 4px;
+}
+
+.hour-hand {
+    width: 0.2rem;
+    height: 35%;
+}
+
+.minute-hand {
+    width: 0.15rem;
+    height: 45%;
+}
+
+.second-hand {
+    width: 1px;
+    height: 48%;
+    background: var(--accent-color);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 32px 0;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    transition: width 0.5s ease-in-out;
+    position: relative;
+}
+
+.progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.05) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255,255,255,0.05) 50%,
+        rgba(255,255,255,0.05) 75%,
+        transparent 75%
+    );
+    background-size: 32px 32px;
+    animation: move 60s linear infinite;
+}
+
+@keyframes move {
+    0% { background-position: 0 0; }
+    100% { background-position: 64px 64px; }
+}
+
+.schedule-table {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.schedule-table.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.schedule-table h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+}
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+select, button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 400;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.9rem;
+}
+
+select:hover, button:hover {
+    background: var(--accent-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+#currentEvent {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 32px;
+    backdrop-filter: blur(8px);
+}
+
+#currentEvent h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#eventInfo {
+    margin-bottom: 1rem;
+}
+
+#eventTime, #eventTeacher {
+    margin-top: 0.5em;
+    color: var(--text-color);
+}
+
+.date-display {
+    font-size: 2rem;
+    margin: 28px 0;
+    color: var(--text-color);
+    font-weight: 500;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

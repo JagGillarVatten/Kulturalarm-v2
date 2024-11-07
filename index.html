@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schemavisare</title>
+    <link href="style.css" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="clock-container">
+                    <div class="analog-clock">
+                        <div class="clock-numbers">
+                            <span class="number" style="--rotation: 0deg;">12</span>
+                            <span class="number" style="--rotation: 30deg;">1</span>
+                            <span class="number" style="--rotation: 60deg;">2</span>
+                            <span class="number" style="--rotation: 90deg;">3</span>
+                            <span class="number" style="--rotation: 120deg;">4</span>
+                            <span class="number" style="--rotation: 150deg;">5</span>
+                            <span class="number" style="--rotation: 180deg;">6</span>
+                            <span class="number" style="--rotation: 210deg;">7</span>
+                            <span class="number" style="--rotation: 240deg;">8</span>
+                            <span class="number" style="--rotation: 270deg;">9</span>
+                            <span class="number" style="--rotation: 300deg;">10</span>
+                            <span class="number" style="--rotation: 330deg;">11</span>
+                        </div>
+                        <div class="clock-hands">
+                            <div class="clock-hand hour-hand" id="hourHand"></div>
+                            <div class="clock-hand minute-hand" id="minuteHand"></div>
+                            <div class="clock-hand second-hand" id="secondHand"></div>
+                        </div>
+                    </div>
+                    <div class="date-display" id="dateDisplay"></div>
+                </div>
+
+                <section class="current-event" id="currentEvent">
+                    <h2 id="currentEventHeader">Just nu</h2>
+                    <div class="event-details" id="eventInfo">
+                        <div class="event-name" id="eventName"></div>
+                        <div class="event-teacher" id="eventTeacher"></div>
+                        <div class="event-time" id="eventTime"></div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progressBar"></div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section class="schedule-table" id="scheduleTable">
+                    <h3>Dagen</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tid</th>
+                                <th>Aktivitet</th>
+                                <th>Längd</th>
+                                 <th>Klass</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody"></tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+
+        <div class="controls">
+            <select id="schemaSelect" class="schedule-select">
+                <option value="Mp2">Mp2</option>
+                <option value="Am2">Am2</option>
+            </select>
+            <button class="btn" onclick="toggleSchedule()">Visa dagens schema</button>
+            <button class="btn" onclick="toggleDarkMode()">Byt tema</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
