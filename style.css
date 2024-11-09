@@ -1,95 +1,114 @@
+/* Root Variables */
 :root {
-    --primary-color: #5B52E5;
-    --secondary-color: #4A90E2;
-    --background-color: #1A1B1E;
-    --text-color: #f0f0f0;
-    --accent-color: #E55B9E;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 8px rgba(108, 99, 255, 0.1);
-    --shadow-lg: 0 8px 16px rgba(74, 144, 226, 0.1);
+    /* Theme Colors */
+    --color-primary: #ff84b7;
+    --color-secondary: #AA398D;
+    --color-background: #ea8484;
+    --color-text: #000000;
+    --color-accent: #ff6fb7;
+    
+    /* UI Elements */
+    --ui-container-backdrop: rgba(255, 195, 194, 0.9);
+    --ui-table-hover: rgba(170, 57, 141, 0.05);
+    --ui-table-border: rgba(0, 0, 0, 0.1);
+    --ui-progress-bg: rgba(0, 0, 0, 0.1);
+    
+    /* Spacing */
+    --spacing-xs: calc(8px * var(--size-multiplier));
+    --spacing-sm: calc(12px * var(--size-multiplier));
+    --spacing-md: calc(16px * var(--size-multiplier));
+    --spacing-lg: calc(24px * var(--size-multiplier));
+    --spacing-xl: calc(32px * var(--size-multiplier));
+    
+    /* Typography */
+    --font-size-xs: calc(0.9rem * var(--size-multiplier));
+    --font-size-sm: calc(1rem * var(--size-multiplier));
+    --font-size-md: calc(1.5rem * var(--size-multiplier));
+    --font-size-lg: calc(2rem * var(--size-multiplier));
+    
+    /* Border Radius */
+    --radius-sm: calc(10px * var(--size-multiplier));
+    --radius-md: calc(12px * var(--size-multiplier));
+    --radius-lg: calc(16px * var(--size-multiplier));
+    --radius-xl: calc(20px * var(--size-multiplier));
+    
+    /* Global Sizing */
+    --size-multiplier: 1.0;
 }
 
+/* Dark Theme */
+:root.dark-theme {
+    --color-primary: #000000;
+    --color-secondary: #AA398D;
+    --color-background: #000000;
+    --color-text: #ffffff;
+    --color-accent: #FFDD00;
+    --ui-container-backdrop: rgba(0, 0, 0, 0.9);
+    --ui-table-hover: rgba(170, 57, 141, 0.1);
+    --ui-table-border: rgba(255, 255, 255, 0.1);
+    --ui-progress-bg: rgba(255, 255, 255, 0.2);
+}
+
+/* Base Styles */
 html {
     height: 100%;
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'inter', sans-serif;
     margin: 0;
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--color-background);
+    color: var(--color-text);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient(45deg, #1A1B1E 0%, #242529 100%);
+    transition: background-color 0.3s ease;
 }
 
+/* Layout Components */
 .container {
     width: 100%;
-    max-width: 1200px;
-    margin: 20px;
-    background-color: rgba(255, 255, 255, 0.02);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: var(--shadow-lg);
+    max-width: calc(1200px * var(--size-multiplier));
+    margin: var(--spacing-lg);
+    background-color: var(--color-background);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-xl);
     transition: all 0.3s ease;
     backdrop-filter: blur(8px);
 }
 
 .main-content {
     display: flex;
-    gap: 32px;
+    gap: var(--spacing-xl);
 }
 
-.left-panel {
-    flex: 1;
-}
-
+.left-panel,
 .right-panel {
     flex: 1;
 }
 
-@media (max-width: 768px) {
-    .container {
-        margin: 16px;
-        padding: 24px;
-    }
-    
-    .main-content {
-        flex-direction: column;
-    }
-}
-
+/* Clock Styles */
 .clock-container {
-    margin-bottom: 40px;
+    margin-bottom: var(--spacing-xl);
 }
 
 .analog-clock {
-    width: 12rem;
-    height: 12rem;
-    border: 3px solid var(--accent-color);
+    width: calc(12rem * var(--size-multiplier));
+    height: calc(12rem * var(--size-multiplier));
+    border: calc(3px * var(--size-multiplier)) solid var(--color-accent);
     border-radius: 50%;
     margin: 0 auto;
     position: relative;
-    background: rgba(255, 255, 255, 0.02);
-    box-shadow: var(--shadow-md);
+    background: transparent;
 }
 
-.clock-numbers {
+.clock-face {
     position: relative;
     width: 100%;
     height: 100%;
-}
-
-.number {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transform: rotate(var(--rotation));
-    font-size: 1.2rem;
-    font-weight: 400;
+    top: 0;
+    left: 0;
 }
 
 .clock-hand {
@@ -97,70 +116,56 @@ body {
     bottom: 50%;
     left: 50%;
     transform-origin: bottom;
-    background: var(--text-color);
-    border-radius: 4px;
+    background: var(--color-text);
+    border-radius: 0%;
 }
 
 .hour-hand {
-    width: 0.2rem;
-    height: 35%;
+    width: calc(0.2rem * var(--size-multiplier));
+    height: 25%;
 }
 
 .minute-hand {
-    width: 0.15rem;
-    height: 45%;
+    width: calc(0.2rem * var(--size-multiplier));
+    height: 32%;
 }
 
 .second-hand {
-    width: 1px;
-    height: 48%;
-    background: var(--accent-color);
+    width: calc(0.2rem * var(--size-multiplier));
+    height: 30%;
+    background: var(--color-accent);
 }
 
+/* Progress Bar */
 .progress-bar {
     width: 100%;
-    height: 32px;
-    background-color: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
+    height: var(--spacing-xl);
+    background-color: var(--ui-progress-bg);
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    margin: 32px 0;
+    margin: var(--spacing-xl) 0;
 }
 
 .progress {
     height: 100%;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    transition: width 0.5s ease-in-out;
+    background-color: var(--color-accent);
+    transition: transform 0.5s ease-in-out;
     position: relative;
+    transform-origin: left;
 }
 
 .progress::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.05) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgba(255,255,255,0.05) 50%,
-        rgba(255,255,255,0.05) 75%,
-        transparent 75%
-    );
-    background-size: 32px 32px;
-    animation: move 60s linear infinite;
+    inset: 0;
+    background-color: var(--color-accent);
+    background-size: calc(8rem * var(--size-multiplier));
 }
 
-@keyframes move {
-    0% { background-position: 0 0; }
-    100% { background-position: 64px 64px; }
-}
-
+/* Schedule Table */
 .schedule-table {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(var(--spacing-lg));
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -171,102 +176,109 @@ body {
 
 .schedule-table h3 {
     margin-top: 0;
-    margin-bottom: 1rem;
-    color: var(--text-color);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
 }
 
+/* Table Styles */
 table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
+    background: var(--ui-container-backdrop);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
 }
 
 th, td {
-    padding: 16px;
+    padding: var(--spacing-md);
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--ui-table-border);
 }
 
 th {
-    background: var(--primary-color);
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text);
     font-weight: 500;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: var(--font-size-xs);
     letter-spacing: 0.05em;
 }
 
 tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: var(--ui-table-hover);
 }
 
+/* Controls */
 .controls {
     display: flex;
-    gap: 12px;
-    margin-top: 28px;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
     flex-wrap: wrap;
     justify-content: center;
 }
 
-select, button {
-    padding: 12px 20px;
+.schedule-select, 
+.btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
     border: none;
-    border-radius: 10px;
-    background: var(--primary-color);
+    border-radius: var(--radius-sm);
+    background: var(--color-secondary);
     color: white;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 400;
-    box-shadow: var(--shadow-sm);
-    font-size: 0.9rem;
+    font-size: var(--font-size-xs);
 }
 
-select:hover, button:hover {
-    background: var(--accent-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+.schedule-select:hover, 
+.btn:hover {
+    background: var(--color-accent);
+    transform: translateY(calc(-1px * var(--size-multiplier)));
 }
 
-#currentEvent {
-    background: rgba(255, 255, 255, 0.02);
-    padding: 32px;
-    border-radius: 16px;
-    box-shadow: var(--shadow-md);
-    margin-bottom: 32px;
+/* Current Event */
+.current-event {
+    background: var(--ui-container-backdrop);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-xl);
     backdrop-filter: blur(8px);
 }
 
-#currentEvent h2 {
+.current-event h2 {
     margin-top: 0;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: var(--font-size-md);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-secondary);
 }
 
-#eventInfo {
-    margin-bottom: 1rem;
+.event-details {
+    margin-bottom: var(--spacing-md);
 }
 
-#eventTime, #eventTeacher {
-    margin-top: 0.5em;
-    color: var(--text-color);
+.event-time, 
+.event-teacher {
+    margin-top: calc(0.5em * var(--size-multiplier));
+    color: var(--color-text);
 }
 
 .date-display {
-    font-size: 2rem;
-    margin: 28px 0;
-    color: var(--text-color);
+    font-size: var(--font-size-lg);
+    margin: var(--spacing-lg) 0;
+    color: var(--color-secondary);
     font-weight: 500;
     text-align: center;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        margin: 1px;
+        padding: var(--spacing-lg);
+    }
+    
+    .main-content {
+        flex-direction: column;
+    }
 }
