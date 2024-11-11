@@ -1,17 +1,17 @@
 /* Root Variables */
 :root {
     /* Theme Colors */
-    --color-primary: #ff84b7;
-    --color-secondary: #AA398D;
-    --color-background: #ea8484;
+    --color-primary: #ff3399;
+    --color-secondary: #5c3134;
+    --color-background: #ff6262;
     --color-text: #000000;
-    --color-accent: #ff6fb7;
+    --color-accent: #e6005c;
     
     /* UI Elements */
-    --ui-container-backdrop: rgba(255, 195, 194, 0.9);
-    --ui-table-hover: rgba(170, 57, 141, 0.05);
-    --ui-table-border: rgba(0, 0, 0, 0.1);
-    --ui-progress-bg: rgba(0, 0, 0, 0.1);
+    --ui-container-backdrop: rgba(255, 195, 194, 0.95);
+    --ui-table-hover: rgba(170, 57, 141, 0.15);
+    --ui-table-border: rgba(0, 0, 0, 0.2);
+    --ui-progress-bg: rgba(0, 0, 0, 0.2);
     
     /* Spacing */
     --spacing-xs: calc(8px * var(--size-multiplier));
@@ -34,19 +34,6 @@
     
     /* Global Sizing */
     --size-multiplier: 1.0;
-}
-
-/* Dark Theme */
-:root.dark-theme {
-    --color-primary: #000000;
-    --color-secondary: #AA398D;
-    --color-background: #000000;
-    --color-text: #ffffff;
-    --color-accent: #FFDD00;
-    --ui-container-backdrop: rgba(0, 0, 0, 0.9);
-    --ui-table-hover: rgba(170, 57, 141, 0.1);
-    --ui-table-border: rgba(255, 255, 255, 0.1);
-    --ui-progress-bg: rgba(255, 255, 255, 0.2);
 }
 
 /* Base Styles */
@@ -75,7 +62,6 @@ body {
     padding: var(--spacing-sm);
     border-radius: var(--radius-xl);
     transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
 }
 
 .main-content {
@@ -101,6 +87,7 @@ body {
     margin: 0 auto;
     position: relative;
     background: transparent;
+    transform-style: preserve-3d;
 }
 
 .clock-face {
@@ -109,6 +96,7 @@ body {
     height: 100%;
     top: 0;
     left: 0;
+    transform-style: preserve-3d;
 }
 
 .clock-hand {
@@ -118,6 +106,7 @@ body {
     transform-origin: bottom;
     background: var(--color-text);
     border-radius: 0%;
+    transform-style: preserve-3d;
 }
 
 .hour-hand {
@@ -144,6 +133,7 @@ body {
     border-radius: var(--radius-sm);
     overflow: hidden;
     margin: var(--spacing-xl) 0;
+    transform-style: preserve-3d;
 }
 
 .progress {
@@ -152,6 +142,7 @@ body {
     transition: transform 0.5s ease-in-out;
     position: relative;
     transform-origin: left;
+    transform-style: preserve-3d;
 }
 
 .progress::after {
@@ -205,8 +196,20 @@ th {
     letter-spacing: 0.05em;
 }
 
+tr {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
 tr:hover {
     background-color: var(--ui-table-hover);
+}
+
+tr.completed {
+    opacity: 0.5;
+}
+
+tr.ongoing {
+    font-weight: bold;
 }
 
 /* Controls */
@@ -244,6 +247,7 @@ tr:hover {
     border-radius: var(--radius-lg);
     margin-bottom: var(--spacing-xl);
     backdrop-filter: blur(8px);
+    transform-style: preserve-3d;
 }
 
 .current-event h2 {

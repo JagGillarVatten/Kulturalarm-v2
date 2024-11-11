@@ -13,7 +13,7 @@
             <div class="main-content">
                 <div class="left-panel">
                     <div class="clock-container">
-                        <div class="analog-clock" data-speed="0.3">
+                        <div class="analog-clock depth-effect parallax" data-speed="0.3">
                             <img src="clock-face.svg" alt="Clock Numbers" class="clock-face">
                             <div class="clock-hands">
                                 <div class="clock-hand hour-hand" id="hourHand"></div>
@@ -21,10 +21,10 @@
                                 <div class="clock-hand second-hand" id="secondHand"></div>
                             </div>
                         </div>
-                        <div class="date-display" id="dateDisplay" data-speed="0.2"></div>
+                        <div class="date-display depth-effect parallax" id="dateDisplay" data-speed="0.2"></div>
                     </div>
 
-                    <section class="current-event" id="currentEvent" data-speed="0.1">
+                    <section class="current-event depth-effect parallax" id="currentEvent" data-speed="0.1">
                         <h2 id="currentEventHeader">Just nu</h2>
                         <div class="event-details" id="eventInfo">
                             <div class="event-name" id="eventName"></div>
@@ -32,13 +32,13 @@
                             <div class="event-time" id="eventTime"></div>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress" id="progressBar"></div>
+                            <div class="progress depth-effect" id="progressBar"></div>
                         </div>
                     </section>
                 </div>
 
                 <div class="right-panel">
-                    <section class="schedule-table" id="scheduleTable" data-speed="0.">
+                    <section class="schedule-table depth-effect" id="scheduleTable">
                         <h3>Dagen</h3>
                         <table>
                             <thead>
@@ -55,13 +55,12 @@
                 </div>
             </div>
 
-            <div class="controls" data-speed="0.05">
+            <div class="controls depth-effect parallax" data-speed="0.05">
                 <select id="schemaSelect" class="schedule-select">
                     <option value="Mp2">Mp2</option>
                     <option value="Am2">Am2</option>
                 </select>
-                <button class="btn" onclick="toggleSchedule()">Visa dagens schema</button>
-                <button class="btn" onclick="toggleDarkMode()">Byt tema</button>
+                <button class="btn depth-effect" onclick="toggleSchedule()">Visa dagens schema</button>
             </div>
         </div>
 

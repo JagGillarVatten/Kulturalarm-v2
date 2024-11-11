@@ -63,7 +63,6 @@ const apply3DTransform = (element, depth = 20) => {
 
   element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 };
-
 const updateParallax = () => {
   const elements = document.querySelectorAll(".parallax");
   elements.forEach((element) => {
@@ -198,7 +197,6 @@ const loadSchema = async (schemaId) => {
     console.error("Fel vid laddning av schema:", error);
   }
 };
-
 const formatTimeRemaining = (ms) => {
   if (ms < 60000) return `${Math.floor(ms / 1000)}s`;
   const minutes = Math.floor(ms / 60000),
@@ -217,7 +215,7 @@ const updateDisplay = (() => {
   let lastUpdate = 0,
     lastEvent = null;
 
-  return () => {
+  const update = () => {
     const now = Date.now();
     if (now - lastUpdate < 100) return;
     lastUpdate = now;
@@ -290,14 +288,23 @@ const updateDisplay = (() => {
       }
     }
   };
+
+  // Start a continuous update loop using requestAnimationFrame
+  const animate = () => {
+    update();
+    requestAnimationFrame(animate);
+  };
+  requestAnimationFrame(animate);
+
+  return update;
 })();
 
 const updateScheduleTable = () => {
+  const now = Date.now();
   const today = new Date().setHours(0, 0, 0, 0),
     todayEvents = events.filter(
       (event) => new Date(event.startDate).setHours(0, 0, 0, 0) === today
     );
-
   DOM_ELEMENTS.scheduleBody.innerHTML = todayEvents.length
     ? todayEvents
         .map((event) => {
@@ -315,22 +322,23 @@ const updateScheduleTable = () => {
                   event.groups.length > MAX_GROUPS ? "..." : ""
                 })`
               : "";
-          return `<tr class="depth-effect parallax" data-speed="0.2"><td>${startTime}-${endTime}</td><td>${event.courseName}${teacherInfo}</td><td>${duration}</td><td>${groupInfo}</td></tr>`;
+
+          let status = '';
+          if (now >= event.endDate) {
+            status = 'completed';
+          } else if (now >= event.startDate && now <= event.endDate) {
+            const progress = ((now - event.startDate) / (event.endDate - event.startDate)) * 100;
+            status = `ongoing" style="background: linear-gradient(to right, rgba(0, 255, 0, 0.2) ${progress}%, transparent ${progress}%)`;
+          }
+
+          return `<tr class="depth-effect ${status}"><td>${startTime}-${endTime}</td><td>${event.courseName}${teacherInfo}</td><td>${duration}</td><td>${groupInfo}</td></tr>`;
         })
         .join("")
-    : '<tr class="depth-effect parallax" data-speed="0.2"><td colspan="3">Inga lektioner idag</td></tr>';
+    : '<tr class="depth-effect"><td colspan="3">Inga lektioner idag</td></tr>';
 };
 
 const toggleSchedule = () =>
   document.getElementById("scheduleTable").classList.toggle("visible");
-
-const toggleDarkMode = () => {
-  document.documentElement.classList.toggle("dark-theme");
-  localStorage.setItem(
-    "darkMode",
-    document.documentElement.classList.contains("dark-theme")
-  );
-};
 
 DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) =>
   loadSchema(e.target.value)
@@ -341,7 +349,4 @@ DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) =>
   setInterval(updateDisplay, REFRESH_INTERVAL);
   setInterval(updateClock, REFRESH_INTERVAL);
   updateClock();
-  if (localStorage.getItem("darkMode") === "true") {
-    document.documentElement.classList.add("dark-theme");
-  }
 })();
