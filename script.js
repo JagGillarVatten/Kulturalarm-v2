@@ -1,3 +1,5 @@
+
+
 const MUSIC_SUBJECTS = Object.freeze({
   ENSEMBLE: "Ensemble",
   GEHOR: "Gehör",
@@ -364,14 +366,23 @@ const updateScheduleTable = () => {
 
 const toggleSchedule = () =>
   document.getElementById("scheduleTable").classList.toggle("visible");
+// Save the selected schedule to localStorage
+DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
+  const selectedSchema = e.target.value;
+  localStorage.setItem("lastSelectedSchema", selectedSchema);
+  loadSchema(selectedSchema);
+});
 
-DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) =>
-  loadSchema(e.target.value)
-);
-
+// Load the last selected schedule on page load
 (() => {
-  loadTests().then(() => loadSchema("Mp2"));
+  loadTests().then(() => {
+    const lastSelectedSchema = localStorage.getItem("lastSelectedSchema") || "Mp2";
+    DOM_ELEMENTS.schemaSelect.value = lastSelectedSchema;
+    loadSchema(lastSelectedSchema);
+  });
   setInterval(updateDisplay, REFRESH_INTERVAL);
   setInterval(updateClock, REFRESH_INTERVAL);
   updateClock();
 })();
+
+
