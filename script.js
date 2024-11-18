@@ -352,6 +352,7 @@ DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
 (() => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   loadTests().then(() => {
     const lastSelectedSchema = localStorage.getItem("lastSelectedSchema") || "Mp2";
     DOM_ELEMENTS.schemaSelect.value = lastSelectedSchema;
@@ -363,6 +364,13 @@ DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
 })();
 
 
+=======
+  loadSchema("Mp2");
+  setInterval(updateDisplay, REFRESH_INTERVAL);
+  setInterval(updateClock, REFRESH_INTERVAL);
+  updateClock();
+})();
+>>>>>>> parent of faa1ed0 (Refactor: Improve code structure and readability)
 =======
   loadSchema("Mp2");
   setInterval(updateDisplay, REFRESH_INTERVAL);
