@@ -1,93 +1,75 @@
 
 
 const MUSIC_SUBJECTS = Object.freeze({
-  ENSEMBLE: "Ensemble",
-  GEHOR: "Gehör",
-  IMPROVISATION: "Improvisation",
-  MUSIKPRODUKTION: "Musikproduktion",
-  ESTETISK: "Estetisk kommunikation",
-  LUNCH: "Lunch",
-});
+    ENSEMBLE: "Ensemble",
+    GEHOR: "Gehör",
+    IMPROVISATION: "Improvisation",
+    MUSIKPRODUKTION: "Musikproduktion",
+    ESTETISK: "Estetisk kommunikation",
+    LUNCH: "Lunch",
+  }),
+  MESSAGES = Object.freeze({
+    [MUSIC_SUBJECTS.ENSEMBLE]: "Dags att jamma tillsammans!",
+    [MUSIC_SUBJECTS.GEHOR]: "Träna ditt musikaliska öra!",
+    [MUSIC_SUBJECTS.IMPROVISATION]: "Låt kreativiteten flöda!",
+    [MUSIC_SUBJECTS.MUSIKPRODUKTION]: "Dags att mixa och producera!",
+    [MUSIC_SUBJECTS.ESTETISK]: "Uttryck dig kreativt!",
+    [MUSIC_SUBJECTS.LUNCH]: "Dags för lunch!",
+  }),
+  DOM_ELEMENTS = Object.freeze(
+    Object.fromEntries(
+      [
+        "hourHand",
+        "minuteHand",
+        "secondHand",
+        "dateDisplay",
+        "eventName",
+        "eventTeacher",
+        "eventTime",
+        "progressBar",
+        "currentEventHeader",
+        "scheduleBody",
+        "schemaSelect",
+      ].map((id) => [id, document.getElementById(id)])
+    )
+  );
+let events = [],
+  animationFrameId = null,
+  scrollPosition = window.pageYOffset;
 
-const MESSAGES = Object.freeze({
-  [MUSIC_SUBJECTS.ENSEMBLE]: "Dags att jamma tillsammans!",
-  [MUSIC_SUBJECTS.GEHOR]: "Träna ditt musikaliska öra!",
-  [MUSIC_SUBJECTS.IMPROVISATION]: "Låt kreativiteten flöda!",
-  [MUSIC_SUBJECTS.MUSIKPRODUKTION]: "Dags att mixa och producera!",
-  [MUSIC_SUBJECTS.ESTETISK]: "Uttryck dig kreativt!",
-  [MUSIC_SUBJECTS.LUNCH]: "Dags för lunch!",
-});
-
-const DOM_ELEMENTS = Object.freeze(
-  Object.fromEntries(
-    [
-      "hourHand",
-      "minuteHand",
-      "secondHand",
-      "dateDisplay",
-      "eventName",
-      "eventTeacher",
-      "eventTime",
-      "progressBar",
-      "currentEventHeader",
-      "scheduleBody",
-      "schemaSelect",
-    ].map((id) => [id, document.getElementById(id)])
-  )
-);
-
-let events = [];
-let animationFrameId = null;
-let scrollPosition = window.pageYOffset;
-
-const REFRESH_INTERVAL = 1000;
-const SHOW_TEACHERS = false;
-const MAX_TEACHERS = 2;
-const MAX_GROUPS = 4;
-const CACHE_NAME = "schema-cache";
-const PARALLAX_SPEED = 0.5;
-
-const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
-
-const timeFormatter = new Intl.DateTimeFormat("sv-SE", {
-  hour: "2-digit",
-  minute: "2-digit",
-});
+const REFRESH_INTERVAL = 1000,
+  SHOW_TEACHERS = false,
+  MAX_TEACHERS = 2,
+  MAX_GROUPS = 4,
+  CACHE_NAME = "schema-cache",
+  PARALLAX_SPEED = 0.5,
+  dateFormatter = new Intl.DateTimeFormat("sv-SE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }),
+  timeFormatter = new Intl.DateTimeFormat("sv-SE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 const apply3DTransform = (element, depth = 20) => {
-  const rect = element.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  const mouseX = event.clientX - centerX;
-  const mouseY = event.clientY - centerY;
-  const rotateX = (mouseY / centerY) * depth;
-  const rotateY = -(mouseX / centerX) * depth;
+  const rect = element.getBoundingClientRect(),
+    centerX = rect.left + rect.width / 2,
+    centerY = rect.top + rect.height / 2,
+    mouseX = event.clientX - centerX,
+    mouseY = event.clientY - centerY,
+    rotateX = (mouseY / centerY) * depth,
+    rotateY = -(mouseX / centerX) * depth;
 
   element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 };
-
-let tests = [];
-
-const loadTests = async () => {
-  try {
-    const response = await fetch('/tests.json');
-    const data = await response.json();
-    tests = data.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
-  } catch (error) {
-    console.error("Failed to load tests:", error);
-  }
-};
-
 const updateParallax = () => {
   const elements = document.querySelectorAll(".parallax");
   elements.forEach((element) => {
-    const speed = element.dataset.speed || PARALLAX_SPEED;
-    const yPos = -(scrollPosition * speed);
+    const speed = element.dataset.speed || PARALLAX_SPEED,
+      yPos = -(scrollPosition * speed);
     element.style.transform = `translate3d(0, ${yPos}px, 0)`;
   });
 };
@@ -106,21 +88,21 @@ window.addEventListener("mousemove", (event) => {
 });
 
 const updateClock = () => {
-  const now = new Date();
-  const hours = now.getHours() % 12;
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const hourDeg = 30 * (hours + minutes / 60);
-  const minuteDeg = 6 * minutes;
-  const secondDeg = 6 * seconds;
+  const now = new Date(),
+    hours = now.getHours() % 12,
+    minutes = now.getMinutes(),
+    seconds = now.getSeconds(),
+    hourDeg = 30 * (hours + minutes / 60),
+    minuteDeg = 6 * minutes,
+    secondDeg = 6 * seconds;
 
   requestAnimationFrame(() => {
     DOM_ELEMENTS.hourHand.style.transform = `perspective(1000px) rotateZ(${hourDeg}deg) translateZ(20px)`;
     DOM_ELEMENTS.minuteHand.style.transform = `perspective(1000px) rotateZ(${minuteDeg}deg) translateZ(40px)`;
     DOM_ELEMENTS.secondHand.style.transform = `perspective(1000px) rotateZ(${secondDeg}deg) translateZ(60px)`;
 
-    const dateStr = dateFormatter.format(now);
-    const [weekday, ...rest] = dateStr.split(" ");
+    const dateStr = dateFormatter.format(now),
+      [weekday, ...rest] = dateStr.split(" ");
     DOM_ELEMENTS.dateDisplay.textContent =
       weekday.charAt(0).toUpperCase() +
       weekday.slice(1) +
@@ -134,26 +116,26 @@ const updateClock = () => {
 };
 
 const parseEventInfo = (summary) => {
-  const groupPattern = /(AM|MP|LA)\d+[a-d]?/g;
-  const combinedPattern = /(?:AM|MP|LA)+\d+[a-d]?/g;
-  const groups = new Set([
-    ...(summary.match(groupPattern) || []),
-    ...(summary.match(combinedPattern) || []).flatMap((group) => {
-      const num = group.match(/\d+[a-d]?/)[0];
-      return (group.match(/(AM|MP|LA)/g) || []).map(
-        (prefix) => `${prefix}${num}`
-      );
-    }),
-  ]);
+  const groupPattern = /(AM|MP|LA)\d+[a-d]?/g,
+    combinedPattern = /(?:AM|MP|LA)+\d+[a-d]?/g,
+    groups = new Set([
+      ...(summary.match(groupPattern) || []),
+      ...(summary.match(combinedPattern) || []).flatMap((group) => {
+        const num = group.match(/\d+[a-d]?/)[0];
+        return (group.match(/(AM|MP|LA)/g) || []).map(
+          (prefix) => `${prefix}${num}`
+        );
+      }),
+    ]);
 
   const cleanSummary = summary
-    .replace(combinedPattern, "")
-    .replace(groupPattern, "")
-    .replace(/,\s*,/g, ",")
-    .trim();
-  const [courseName, ...teacherParts] = cleanSummary.includes("\\,")
-    ? cleanSummary.split("\\,")
-    : cleanSummary.split(",");
+      .replace(combinedPattern, "")
+      .replace(groupPattern, "")
+      .replace(/,\s*,/g, ",")
+      .trim(),
+    [courseName, ...teacherParts] = cleanSummary.includes("\\,")
+      ? cleanSummary.split("\\,")
+      : cleanSummary.split(",");
 
   return {
     teacher: teacherParts
@@ -166,14 +148,14 @@ const parseEventInfo = (summary) => {
 
 const loadSchema = async (schemaId) => {
   try {
-    const cache = await caches.open(CACHE_NAME);
-    const response =
-      (await cache.match(`/scheman/${schemaId}.ics`)) ||
-      (await fetch(`/scheman/${schemaId}.ics`).then((res) => {
-        cache.put(`/scheman/${schemaId}.ics`, res.clone());
-        return res;
-      }));
-    const data = await response.text();
+    const cache = await caches.open(CACHE_NAME),
+      response =
+        (await cache.match(`/scheman/${schemaId}.ics`)) ||
+        (await fetch(`/scheman/${schemaId}.ics`).then((res) => {
+          cache.put(`/scheman/${schemaId}.ics`, res.clone());
+          return res;
+        })),
+      data = await response.text();
 
     events = new ICAL.Component(ICAL.parse(data))
       .getAllSubcomponents("vevent")
@@ -211,36 +193,20 @@ const loadSchema = async (schemaId) => {
       }, [])
       .sort((a, b) => a.startDate - b.startDate);
 
-    const relevantTests = tests.filter(test => 
-      test.schedules.includes(schemaId) && 
-      new Date(test.dateTime) >= new Date()
-    );
-
-    events = [...events, ...relevantTests.map(test => ({
-      courseName: `PROV: ${test.name}`,
-      teacher: test.subject,
-      startDate: new Date(test.dateTime),
-      endDate: new Date(new Date(test.dateTime).getTime() + (test.duration || 60) * 60000),
-      groups: test.groups || [],
-      isTest: true
-    }))].sort((a, b) => a.startDate - b.startDate);
-
     updateDisplay();
     updateScheduleTable();
   } catch (error) {
     console.error("Fel vid laddning av schema:", error);
   }
 };
-
 const formatTimeRemaining = (ms) => {
   if (ms < 60000) return `${Math.floor(ms / 1000)}s`;
-  const minutes = Math.floor(ms / 60000);
-  const hours = Math.floor(minutes / 60);
+  const minutes = Math.floor(ms / 60000),
+    hours = Math.floor(minutes / 60);
   return hours > 0 ? `${hours}t ${minutes % 60}m` : `${minutes}m`;
 };
 
 const getEventMessage = (event, timeStr) => {
-  if (event.isTest) return `Dags för prov! ${timeStr}`;
   const subject = Object.values(MUSIC_SUBJECTS).find((subj) =>
     event.courseName.includes(subj)
   );
@@ -248,8 +214,8 @@ const getEventMessage = (event, timeStr) => {
 };
 
 const updateDisplay = (() => {
-  let lastUpdate = 0;
-  let lastEvent = null;
+  let lastUpdate = 0,
+    lastEvent = null;
 
   const update = () => {
     const now = Date.now();
@@ -264,24 +230,31 @@ const updateDisplay = (() => {
       const progress =
           ((now - currentEvent.startDate) /
             (currentEvent.endDate - currentEvent.startDate)) *
-          100;
-      const timeRemaining = formatTimeRemaining(currentEvent.endDate - now);
+          100,
+        timeRemaining = formatTimeRemaining(currentEvent.endDate - now);
 
       if (
         !lastEvent ||
         lastEvent.id !== currentEvent.startDate.getTime() ||
         lastEvent.timeRemaining !== timeRemaining
       ) {
-        DOM_ELEMENTS.currentEventHeader.textContent = currentEvent.isTest ? "PROV" : "Just nu";
+        DOM_ELEMENTS.currentEventHeader.textContent = "Just nu";
         DOM_ELEMENTS.eventName.textContent = currentEvent.courseName;
-        DOM_ELEMENTS.eventTeacher.textContent = `${currentEvent.teacher || ""} ${currentEvent.groups.join(", ")}`;
-        DOM_ELEMENTS.eventTime.textContent = getEventMessage(currentEvent, `(${timeRemaining} kvar)`);
+        DOM_ELEMENTS.eventTeacher.textContent = `${
+          currentEvent.teacher || ""
+        } ${currentEvent.groups.join(", ")}`;
+        DOM_ELEMENTS.eventTime.textContent = getEventMessage(
+          currentEvent,
+          `(${timeRemaining} kvar)`
+        );
         lastEvent = {
           id: currentEvent.startDate.getTime(),
           timeRemaining,
         };
       }
-      DOM_ELEMENTS.progressBar.style.transform = `perspective(1000px) scaleX(${Math.min(100, Math.max(0, progress)) / 100}) translateZ(10px)`;
+      DOM_ELEMENTS.progressBar.style.transform = `perspective(1000px) scaleX(${
+        Math.min(100, Math.max(0, progress)) / 100
+      }) translateZ(10px)`;
     } else {
       const nextEvent = events.find((event) => now < event.startDate);
       if (nextEvent) {
@@ -293,9 +266,11 @@ const updateDisplay = (() => {
           lastEvent.id !== nextEvent.startDate.getTime() ||
           lastEvent.timeRemaining !== timeRemaining
         ) {
-          DOM_ELEMENTS.currentEventHeader.textContent = nextEvent.isTest ? "Nästa prov" : "Härnäst";
+          DOM_ELEMENTS.currentEventHeader.textContent = "Härnäst";
           DOM_ELEMENTS.eventName.textContent = nextEvent.courseName;
-          DOM_ELEMENTS.eventTeacher.textContent = `${nextEvent.teacher || ""} ${nextEvent.groups.join(", ")}`;
+          DOM_ELEMENTS.eventTeacher.textContent = `${
+            nextEvent.teacher || ""
+          } ${nextEvent.groups.join(", ")}`;
           DOM_ELEMENTS.eventTime.textContent = `Börjar om ${timeRemaining}`;
           lastEvent = {
             id: nextEvent.startDate.getTime(),
@@ -316,6 +291,7 @@ const updateDisplay = (() => {
     }
   };
 
+  // Start a continuous update loop using requestAnimationFrame
   const animate = () => {
     update();
     requestAnimationFrame(animate);
@@ -327,27 +303,27 @@ const updateDisplay = (() => {
 
 const updateScheduleTable = () => {
   const now = Date.now();
-  const today = new Date().setHours(0, 0, 0, 0);
-  const todayEvents = events.filter(
-    (event) => new Date(event.startDate).setHours(0, 0, 0, 0) === today
-  );
+  const today = new Date().setHours(0, 0, 0, 0),
+    todayEvents = events.filter(
+      (event) => new Date(event.startDate).setHours(0, 0, 0, 0) === today
+    );
   DOM_ELEMENTS.scheduleBody.innerHTML = todayEvents.length
     ? todayEvents
         .map((event) => {
-          const startTime = timeFormatter.format(event.startDate);
-          const endTime = timeFormatter.format(event.endDate);
-          const duration = formatTimeRemaining(event.endDate - event.startDate);
-          const teacherInfo =
-            SHOW_TEACHERS &&
-            event.teacher &&
-            event.teacher.split(",").length <= MAX_TEACHERS
-              ? ` - ${event.teacher}`
+          const startTime = timeFormatter.format(event.startDate),
+            endTime = timeFormatter.format(event.endDate),
+            duration = formatTimeRemaining(event.endDate - event.startDate),
+            teacherInfo =
+              SHOW_TEACHERS &&
+              event.teacher &&
+              event.teacher.split(",").length <= MAX_TEACHERS
+                ? ` - ${event.teacher}`
+                : "",
+            groupInfo = event.groups.length
+              ? ` (${event.groups.slice(0, MAX_GROUPS).join(", ")}${
+                  event.groups.length > MAX_GROUPS ? "..." : ""
+                })`
               : "";
-          const groupInfo = event.groups.length
-            ? ` (${event.groups.slice(0, MAX_GROUPS).join(", ")}${
-                event.groups.length > MAX_GROUPS ? "..." : ""
-              })`
-            : "";
 
           let status = '';
           if (now >= event.endDate) {
@@ -357,8 +333,7 @@ const updateScheduleTable = () => {
             status = `ongoing" style="background: linear-gradient(to right, rgba(0, 255, 0, 0.2) ${progress}%, transparent ${progress}%)`;
           }
 
-          const testClass = event.isTest ? 'test-event' : '';
-          return `<tr class="depth-effect ${status} ${testClass}"><td>${startTime}-${endTime}</td><td>${event.courseName}${teacherInfo}</td><td>${duration}</td><td>${groupInfo}</td></tr>`;
+          return `<tr class="depth-effect ${status}"><td>${startTime}-${endTime}</td><td>${event.courseName}${teacherInfo}</td><td>${duration}</td><td>${groupInfo}</td></tr>`;
         })
         .join("")
     : '<tr class="depth-effect"><td colspan="3">Inga lektioner idag</td></tr>';
@@ -375,6 +350,7 @@ DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
 
 // Load the last selected schedule on page load
 (() => {
+<<<<<<< HEAD
   loadTests().then(() => {
     const lastSelectedSchema = localStorage.getItem("lastSelectedSchema") || "Mp2";
     DOM_ELEMENTS.schemaSelect.value = lastSelectedSchema;
@@ -386,3 +362,10 @@ DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
 })();
 
 
+=======
+  loadSchema("Mp2");
+  setInterval(updateDisplay, REFRESH_INTERVAL);
+  setInterval(updateClock, REFRESH_INTERVAL);
+  updateClock();
+})();
+>>>>>>> parent of faa1ed0 (Refactor: Improve code structure and readability)
