@@ -1,2 +1,6 @@
 teachers.txt
 teachers
+
+.env
+logs/
+__pycache__/
