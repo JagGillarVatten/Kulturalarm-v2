@@ -1,71 +1,113 @@
 <!DOCTYPE html>
 <html lang="sv">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kulturalarm v2</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kulturalarm v2</title>
+    <meta name="description" content="Ett smart schema för kulturskolan" />
+    <meta name="theme-color" content="#2563eb" />
 
-        <link rel="stylesheet" href="style.css">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <div class="container">
-            <div class="main-content">
-                <div class="left-panel">
-                    <div class="clock-container">
-                        <div class="analog-clock depth-effect parallax" data-speed="0.3">
-                            <img src="clock-face.svg" alt="Clock Numbers" class="clock-face">
-                            <div class="clock-hands">
-                                <div class="clock-hand hour-hand" id="hourHand"></div>
-                                <div class="clock-hand minute-hand" id="minuteHand"></div>
-                                <div class="clock-hand second-hand" id="secondHand"></div>
-                            </div>
-                        </div>
-                        <div class="date-display depth-effect parallax" id="dateDisplay" data-speed="0.2"></div>
-                    </div>
-
-                    <section class="current-event depth-effect parallax" id="currentEvent" data-speed="0.1">
-                        <h2 id="currentEventHeader">Just nu</h2>
-                        <div class="event-details" id="eventInfo">
-                            <div class="event-name" id="eventName"></div>
-                            <div class="event-teacher" id="eventTeacher"></div>
-                            <div class="event-time" id="eventTime"></div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress depth-effect" id="progressBar"></div>
-                        </div>
-                    </section>
-                </div>
-
-                <div class="right-panel">
-                    <section class="schedule-table depth-effect" id="scheduleTable">
-                        <h3>Dagen</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tid</th>
-                                    <th>Aktivitet</th>
-                                    <th>Längd</th>
-                                    <th>Klass</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scheduleBody"></tbody>
-                        </table>
-                    </section>
-                </div>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="main-content">
+        <div class="left-panel">
+          <div class="clock-container">
+            <div class="analog-clock depth-effect parallax" data-speed="0.3">
+              <img
+                src="clock-face.svg"
+                alt="Clock Numbers"
+                class="clock-face"
+              />
+              <div class="clock-hands">
+                <div class="clock-hand hour-hand" id="hourHand"></div>
+                <div class="clock-hand minute-hand" id="minuteHand"></div>
+                <div class="clock-hand second-hand" id="secondHand"></div>
+              </div>
             </div>
+            <div
+              class="date-display depth-effect parallax"
+              id="dateDisplay"
+              data-speed="0.2"
+            ></div>
+          </div>
 
-            <div class="controls depth-effect parallax" data-speed="0.05">
-                <select id="schemaSelect" class="schedule-select">
-                    <option value="Mp2">Mp2</option>
-                    <option value="Am2">Am2</option>
-                </select>
-                <button class="btn depth-effect" onclick="toggleSchedule()">Visa dagens schema</button>
+          <section
+            class="current-event depth-effect parallax"
+            id="currentEvent"
+            data-speed="0.1"
+          >
+            <div class="event-status" id="eventStatus"></div>
+            <h2 id="currentEventHeader">Just nu</h2>
+            <div class="event-details" id="eventInfo">
+              <div class="event-name" id="eventName"></div>
+              <div class="event-teacher" id="eventTeacher"></div>
+              <div class="event-time" id="eventTime"></div>
             </div>
+            <div class="progress-bar">
+              <div class="progress depth-effect" id="progressBar"></div>
+            </div>
+          </section>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
-        <script src="script.js"></script>
-    </body>
+        <div class="right-panel">
+          <section class="schedule-table depth-effect" id="scheduleTable">
+            <div class="schedule-header">
+              <h3>Dagens Schema</h3>
+              <div
+                class="error-message"
+                id="scheduleError"
+                style="display: none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12" y2="16"></line>
+                </svg>
+                <span id="scheduleErrorText"></span>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tid</th>
+                  <th>Aktivitet</th>
+                  <th>Längd</th>
+                  <th>Klass</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </section>
+        </div>
+      </div>
 
+      <div class="controls depth-effect parallax" data-speed="0.05">
+        <select id="schemaSelect" class="schedule-select">
+          <option value="Mp2">Mp2</option>
+          <option value="Am2">Am2</option>
+        </select>
+        <button class="btn depth-effect" onclick="toggleSchedule()">
+          Visa dagens schema
+        </button>
+      </div>
+    </div>
+    <link rel="manifest" href="manifest.json" />
+
+    <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>
