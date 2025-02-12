@@ -6,14 +6,7 @@ const MUSIC_SUBJECTS = Object.freeze({
     ESTETISK: "Estetisk kommunikation",
     LUNCH: "Lunch",
 }),
-MESSAGES = Object.freeze({
-    [MUSIC_SUBJECTS.ENSEMBLE]: "Dags att jamma tillsammans!",
-    [MUSIC_SUBJECTS.GEHOR]: "Träna ditt musikaliska öra!",
-    [MUSIC_SUBJECTS.IMPROVISATION]: "Låt kreativiteten flöda!",
-    [MUSIC_SUBJECTS.MUSIKPRODUKTION]: "Dags att mixa och producera!",
-    [MUSIC_SUBJECTS.ESTETISK]: "Uttryck dig kreativt!",
-    [MUSIC_SUBJECTS.LUNCH]: "Dags för lunch!",
-}),
+
 DOM_ELEMENTS = Object.freeze(
     Object.fromEntries(
         [
@@ -41,7 +34,6 @@ const CONFIG = Object.freeze({
     MAX_TEACHERS: 2,
     MAX_GROUPS: 4,
     CACHE_NAME: "schema-cache",
-    PARALLAX_SPEED: 0.5,
     TIMEDIT_URL: "https://cloud.timeedit.net/medborgarskolan/web/elev/ri609QZZ1Q2ZeQQ55888d8B4y0Z4Z8t87u1YZ6QQ564t6n9bBA8Q41BBBCF74433CD00A00DCD3B.ics",
     AUTO_FETCH_INTERVAL: 3600000, // 1 hour in milliseconds
 });
@@ -63,7 +55,6 @@ const FORMATTERS = Object.freeze({
 let state = {
     events: [],
     animationFrameId: null,
-    scrollPosition: window.pageYOffset,
     isLoading: false,
     hasError: false,
     errorMessage: "",
@@ -84,20 +75,13 @@ const apply3DTransform = (element, depth = 20) => {
     element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 };
 
-const updateParallax = () => {
-    const elements = document.querySelectorAll(".parallax");
-    elements.forEach((element) => {
-        const speed = element.dataset.speed || CONFIG.PARALLAX_SPEED,
-            yPos = -(state.scrollPosition * speed);
-        element.style.transform = `translate3d(0, ${yPos}px, 0)`;
-    });
+const debounce = (fn, delay) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
 };
-
-// Event Handlers
-window.addEventListener("scroll", () => {
-    state.scrollPosition = window.pageYOffset;
-    updateParallax();
-});
 
 window.addEventListener("mousemove", (event) => {
     requestAnimationFrame(() => {
@@ -127,11 +111,14 @@ const updateClock = () => {
 // Event Processing
 const parseEventInfo = (summary) => {
     try {
-        const [courseName, teacher, ...groups] = summary.split(" - ").map((s) => s.trim());
+        const parts = summary.split(' - ');
+        const courseName = parts[0].trim();
+        const teacher = parts.length > 1 ? parts[1].trim() : "";
+        const groups = parts.slice(2).map(part => part.trim());
         return {
             courseName: courseName || "Okänd aktivitet",
-            teacher: teacher || "",
-            groups: groups.length ? groups : [],
+            teacher: teacher,
+            groups: groups,
         };
     } catch (error) {
         console.error("Error parsing event info:", error);
@@ -420,3 +407,23 @@ if (savedSchema === 'mp2') {
 setInterval(updateDisplay, CONFIG.REFRESH_INTERVAL);
 setInterval(updateClock, CONFIG.REFRESH_INTERVAL);
 updateClock();
+
+const cleanupResources = () => {
+    if (state.animationFrameId) {
+        cancelAnimationFrame(state.animationFrameId);
+    }
+    state.events = [];
+};
+
+const CACHE_CONFIG = {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    version: '1.0'
+};
+
+const clearStaleCache = () => {
+    const cacheTimestamp = localStorage.getItem('cache_timestamp');
+    if (cacheTimestamp && Date.now() - parseInt(cacheTimestamp) > CACHE_CONFIG.maxAge) {
+        localStorage.removeItem('mp2_schedule');
+        localStorage.removeItem('cache_timestamp');
+    }
+};

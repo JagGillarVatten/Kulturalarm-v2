@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kulturalarm v2</title>
-    <meta name="description" content="Ett smart schema för kulturskolan" />
+    <meta name="description" content="Ett smart schema för Kulturama" />
     <meta name="theme-color" content="#2563eb" />
 
     <link rel="stylesheet" href="style.css" />
@@ -18,7 +18,7 @@
       <div class="main-content">
         <div class="left-panel">
           <div class="clock-container">
-            <div class="analog-clock depth-effect parallax" data-speed="0.3">
+            <div class="analog-clock depth-effect">
               <img
                 src="clock-face.svg"
                 alt="Clock Numbers"
@@ -31,16 +31,14 @@
               </div>
             </div>
             <div
-              class="date-display depth-effect parallax"
+              class="date-display depth-effect"
               id="dateDisplay"
-              data-speed="0.2"
             ></div>
           </div>
 
           <section
-            class="current-event depth-effect parallax"
+            class="current-event depth-effect"
             id="currentEvent"
-            data-speed="0.1"
           >
             <div class="event-status" id="eventStatus"></div>
             <h2 id="currentEventHeader">Just nu</h2>
@@ -48,6 +46,7 @@
               <div class="event-name" id="eventName"></div>
               <div class="event-teacher" id="eventTeacher"></div>
               <div class="event-time" id="eventTime"></div>
+              <div class="time-remaining">Tid kvar: <span id="timeRemaining"></span></div>
             </div>
             <div class="progress-bar">
               <div class="progress depth-effect" id="progressBar"></div>
@@ -95,12 +94,12 @@
         </div>
       </div>
 
-      <div class="controls depth-effect parallax" data-speed="0.05">
-        <select id="schemaSelect" class="schedule-select">
+      <div class="controls depth-effect">
+        <select id="schemaSelect" class="schedule-select" aria-label="Välj schema">
           <option value="Mp2">Mp2</option>
           <option value="Am2">Am2</option>
         </select>
-        <button class="btn depth-effect" onclick="toggleSchedule()">
+        <button class="btn depth-effect" onclick="toggleSchedule()" aria-label="Visa eller dölj dagens schema">
           Visa dagens schema
         </button>
       </div>
@@ -111,3 +110,10 @@
     <script src="script.js"></script>
   </body>
 </html>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<noscript>
+    <div class="error-message">Denna app kräver JavaScript för att fungera.</div>
+</noscript>
