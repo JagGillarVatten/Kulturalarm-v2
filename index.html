@@ -8,10 +8,9 @@
     <meta name="theme-color" content="#2563eb" />
 
     <link rel="stylesheet" href="style.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div class="container">
@@ -19,27 +18,17 @@
         <div class="left-panel">
           <div class="clock-container">
             <div class="analog-clock depth-effect">
-              <img
-                src="clock-face.svg"
-                alt="Clock Numbers"
-                class="clock-face"
-              />
+              <img src="clock-face.svg" alt="Clock Numbers" class="clock-face" />
               <div class="clock-hands">
                 <div class="clock-hand hour-hand" id="hourHand"></div>
                 <div class="clock-hand minute-hand" id="minuteHand"></div>
                 <div class="clock-hand second-hand" id="secondHand"></div>
               </div>
             </div>
-            <div
-              class="date-display depth-effect"
-              id="dateDisplay"
-            ></div>
+            <div class="date-display depth-effect" id="dateDisplay"></div>
           </div>
 
-          <section
-            class="current-event depth-effect"
-            id="currentEvent"
-          >
+          <section class="current-event depth-effect" id="currentEvent">
             <div class="event-status" id="eventStatus"></div>
             <h2 id="currentEventHeader">Just nu</h2>
             <div class="event-details" id="eventInfo">
@@ -58,20 +47,8 @@
           <section class="schedule-table depth-effect" id="scheduleTable">
             <div class="schedule-header">
               <h3>Dagens Schema</h3>
-              <div
-                class="error-message"
-                id="scheduleError"
-                style="display: none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
+              <div class="error-message" id="scheduleError" style="display: none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="12"></line>
                   <line x1="12" y1="16" x2="12" y2="16"></line>
@@ -96,24 +73,21 @@
 
       <div class="controls depth-effect">
         <select id="schemaSelect" class="schedule-select" aria-label="Välj schema">
-          <option value="Mp2">Mp2</option>
-          <option value="Am2">Am2</option>
+          <option value="mp2">Mp2</option>
+          <option value="am2">Am2</option>
         </select>
         <button class="btn depth-effect" onclick="toggleSchedule()" aria-label="Visa eller dölj dagens schema">
           Visa dagens schema
         </button>
       </div>
     </div>
-    <link rel="manifest" href="manifest.json" />
 
+    <link rel="manifest" href="manifest.json" />
     <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
+
+    <noscript>
+      <div class="error-message">Denna app kräver JavaScript för att fungera.</div>
+    </noscript>
   </body>
 </html>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<noscript>
-    <div class="error-message">Denna app kräver JavaScript för att fungera.</div>
-</noscript>
