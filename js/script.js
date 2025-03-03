@@ -1,4 +1,4 @@
-// Constants and Configuration
+// config
 const MUSIC_SUBJECTS = Object.freeze({
   ENSEMBLE: "Ensemble",
   GEHOR: "Gehör",
@@ -10,14 +10,19 @@ const MUSIC_SUBJECTS = Object.freeze({
 
 const CONFIG = Object.freeze({
   REFRESH_INTERVAL: 1000,
-  SHOW_TEACHERS: false,
-  MAX_TEACHERS: 2,
-  MAX_GROUPS: 4,
+  SHOW_TEACHERS: true,
+  MAX_TEACHERS: 1,
+  MAX_GROUPS: 12,
   CACHE_NAME: "schema-cache",
-  TIMEDIT_URL:
-    "https://cloud.timeedit.net/medborgarskolan/web/elev/ri609QZZ1Q2ZeQQ55888d8B4y0Z4Z8t87u1YZ6QQ564t6n9bBA8Q41BBBCF74433CD00A00DCD3B.ics",
-  AUTO_FETCH_INTERVAL: 3600000, // 1 hour in milliseconds
+
+
+
 });
+
+const CACHE_CONFIG = {
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  version: "1.0",
+};
 
 const FORMATTERS = Object.freeze({
   date: new Intl.DateTimeFormat("sv-SE", {
@@ -32,6 +37,7 @@ const FORMATTERS = Object.freeze({
   }),
 });
 
+// dom
 const DOM_ELEMENTS = Object.freeze(
   Object.fromEntries(
     [
@@ -49,11 +55,12 @@ const DOM_ELEMENTS = Object.freeze(
       "eventStatus",
       "scheduleError",
       "scheduleErrorText",
+      "timeRemaining",
     ].map((id) => [id, document.getElementById(id)])
   )
 );
 
-// State management
+// state
 let state = {
   events: [],
   animationFrameId: null,
@@ -62,7 +69,7 @@ let state = {
   errorMessage: "",
 };
 
-// Utility Functions
+// utils
 const debounce = (fn, delay) => {
   let timeoutId;
   return (...args) => {
@@ -78,30 +85,7 @@ const formatTimeRemaining = (ms) => {
   return hours > 0 ? `${hours}t ${minutes % 60}m` : `${minutes}m`;
 };
 
-// UI Effects
-const apply3DTransform = (element, depth = 20) => {
-  if (!element) return;
-
-  const rect = element.getBoundingClientRect(),
-    centerX = rect.left + rect.width / 2,
-    centerY = rect.top + rect.height / 2,
-    mouseX = event.clientX - centerX,
-    mouseY = event.clientY - centerY,
-    rotateX = (mouseY / centerY) * depth,
-    rotateY = -(mouseX / centerX) * depth;
-
-  element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-};
-
-window.addEventListener("mousemove", (event) => {
-  requestAnimationFrame(() => {
-    document.querySelectorAll(".depth-effect").forEach((element) => {
-      apply3DTransform(element);
-    });
-  });
-});
-
-// Clock Functions
+// clock
 const updateClock = () => {
   const now = new Date(),
     hours = now.getHours() % 12,
@@ -118,7 +102,7 @@ const updateClock = () => {
   });
 };
 
-// Event Processing Functions
+// event Processing
 const parseEventInfo = (summary, description = "") => {
   try {
     const parts = summary.split(",").map((part) => part.trim());
@@ -203,7 +187,7 @@ const processEvents = (data) => {
     .sort((a, b) => a.startDate - b.startDate);
 };
 
-// UI Update Functions
+// ui
 const updateUIState = () => {
   document.querySelectorAll(".schedule-table, .current-event").forEach((el) => {
     el.classList.toggle("loading", state.isLoading);
@@ -248,6 +232,8 @@ const updateDisplay = (() => {
         : "";
       const endTime = FORMATTERS.time.format(currentEvent.endDate);
       DOM_ELEMENTS.eventTime.textContent = `Slutar ${endTime}`;
+      const timeLeft = currentEvent.endDate - now;
+      DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(timeLeft);
     } else if (nextEvent) {
       DOM_ELEMENTS.eventStatus.textContent = "○ Kommande";
       DOM_ELEMENTS.eventStatus.className = "event-status status-upcoming";
@@ -257,12 +243,15 @@ const updateDisplay = (() => {
         : "";
       const startTime = FORMATTERS.time.format(nextEvent.startDate);
       DOM_ELEMENTS.eventTime.textContent = `Börjar ${startTime}`;
+      const timeUntilStart = nextEvent.startDate - now;
+      DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(timeUntilStart);
     } else {
       DOM_ELEMENTS.eventStatus.textContent = "Inga fler aktiviteter idag";
       DOM_ELEMENTS.eventStatus.className = "event-status";
       DOM_ELEMENTS.eventName.textContent = "Inga fler aktiviteter idag";
       DOM_ELEMENTS.eventTeacher.textContent = "";
       DOM_ELEMENTS.eventTime.textContent = "";
+      DOM_ELEMENTS.timeRemaining.textContent = "";
     }
 
     if (currentEvent) {
@@ -328,7 +317,7 @@ const toggleSchedule = () => {
   document.querySelector(".schedule-table").classList.toggle("visible");
 };
 
-// Fetch ICS file from Timedit
+// api
 async function fetchTimeditSchedule() {
   try {
     state.isLoading = true;
@@ -341,13 +330,9 @@ async function fetchTimeditSchedule() {
 
     const icsData = await response.text();
 
-    // Save to local storage
     localStorage.setItem("mp2_schedule", icsData);
-
-    // Save timestamp of last fetch
     localStorage.setItem("last_schedule_fetch", Date.now().toString());
 
-    // Process the events
     state.events = processEvents(icsData);
 
     state.isLoading = false;
@@ -364,7 +349,7 @@ async function fetchTimeditSchedule() {
   }
 }
 
-// Function to check and fetch schedule if needed
+// cache
 function checkAndUpdateSchedule() {
   const lastFetch = localStorage.getItem("last_schedule_fetch");
   const currentTime = Date.now();
@@ -377,21 +362,24 @@ function checkAndUpdateSchedule() {
   }
 }
 
-// Initialize
+const clearStaleCache = () => {
+  const cacheTimestamp = localStorage.getItem("cache_timestamp");
+  if (
+    cacheTimestamp &&
+    Date.now() - parseInt(cacheTimestamp) > CACHE_CONFIG.maxAge
+  ) {
+    localStorage.removeItem("mp2_schedule");
+    localStorage.removeItem("cache_timestamp");
+  }
+};
+
+// init
 DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
   const selectedSchema = e.target.value;
   localStorage.setItem("lastSelectedSchema", selectedSchema);
-  if (selectedSchema === "mp2") {
-    fetchTimeditSchedule();
-  } else {
-    loadSchema(selectedSchema);
-  }
+  loadSchema(selectedSchema);
 });
 
-// Set up automatic schedule checking
-setInterval(checkAndUpdateSchedule, CONFIG.AUTO_FETCH_INTERVAL);
-
-// Initial load
 const savedSchema = localStorage.getItem("lastSelectedSchema") || "mp1";
 DOM_ELEMENTS.schemaSelect.value = savedSchema;
 if (savedSchema === "mp2") {
@@ -412,23 +400,7 @@ updateClock();
 
 const cleanupResources = () => {
   if (state.animationFrameId) {
-    cancelAnimationFrame(state.animationFrameId);
+    cancelAnimation
   }
   state.events = [];
-};
-
-const CACHE_CONFIG = {
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  version: "1.0",
-};
-
-const clearStaleCache = () => {
-  const cacheTimestamp = localStorage.getItem("cache_timestamp");
-  if (
-    cacheTimestamp &&
-    Date.now() - parseInt(cacheTimestamp) > CACHE_CONFIG.maxAge
-  ) {
-    localStorage.removeItem("mp2_schedule");
-    localStorage.removeItem("cache_timestamp");
-  }
 };
