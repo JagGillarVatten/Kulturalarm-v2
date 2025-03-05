@@ -14,9 +14,6 @@ const CONFIG = Object.freeze({
   MAX_TEACHERS: 1,
   MAX_GROUPS: 12,
   CACHE_NAME: "schema-cache",
-
-
-
 });
 
 const CACHE_CONFIG = {
@@ -41,9 +38,9 @@ const FORMATTERS = Object.freeze({
 const DOM_ELEMENTS = Object.freeze(
   Object.fromEntries(
     [
-      "hourHand",
-      "minuteHand",
-      "secondHand",
+      "hour",
+      "minute",
+      "second",
       "dateDisplay",
       "eventName",
       "eventTeacher",
@@ -56,6 +53,7 @@ const DOM_ELEMENTS = Object.freeze(
       "scheduleError",
       "scheduleErrorText",
       "timeRemaining",
+      "digitalClock",
     ].map((id) => [id, document.getElementById(id)])
   )
 );
@@ -87,19 +85,19 @@ const formatTimeRemaining = (ms) => {
 
 // clock
 const updateClock = () => {
-  const now = new Date(),
-    hours = now.getHours() % 12,
-    minutes = now.getMinutes(),
-    seconds = now.getSeconds(),
-    hourDeg = 30 * (hours + minutes / 60),
-    minuteDeg = 6 * minutes,
-    secondDeg = 6 * seconds;
-
-  requestAnimationFrame(() => {
-    DOM_ELEMENTS.hourHand.style.transform = `perspective(1000px) rotateZ(${hourDeg}deg) translateZ(20px)`;
-    DOM_ELEMENTS.minuteHand.style.transform = `perspective(1000px) rotateZ(${minuteDeg}deg) translateZ(40px)`;
-    DOM_ELEMENTS.secondHand.style.transform = `perspective(1000px) rotateZ(${secondDeg}deg) translateZ(60px)`;
-  });
+  const now = new Date();
+  const second = now.getSeconds();
+  const minute = now.getMinutes();
+  const hour = now.getHours() % 12;
+  
+  DOM_ELEMENTS.hour.style.transform = `rotate(${30 * hour + minute / 2}deg)`;
+  DOM_ELEMENTS.minute.style.transform = `rotate(${6 * minute}deg)`;
+  DOM_ELEMENTS.second.style.transform = `rotate(${6 * second}deg)`;
+  
+  // Update digital clock
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = minute.toString().padStart(2, '0');
+  DOM_ELEMENTS.digitalClock.textContent = `${hours}:${minutes}`;
 };
 
 // event Processing
@@ -395,7 +393,7 @@ if (savedSchema === "mp2") {
   loadSchema(savedSchema);
 }
 setInterval(updateDisplay, CONFIG.REFRESH_INTERVAL);
-setInterval(updateClock, CONFIG.REFRESH_INTERVAL);
+setInterval(updateClock, 1000);
 updateClock();
 
 const cleanupResources = () => {

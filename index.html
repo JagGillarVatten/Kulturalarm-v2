@@ -17,14 +17,26 @@
       <div class="main-content">
         <div class="left-panel">
           <div class="clock-container">
-            <div class="analog-clock depth-effect">
-              <img src="clock-face.svg" alt="Clock Numbers" class="clock-face" />
-              <div class="clock-hands">
-                <div class="clock-hand hour-hand" id="hourHand"></div>
-                <div class="clock-hand minute-hand" id="minuteHand"></div>
-                <div class="clock-hand second-hand" id="secondHand"></div>
-              </div>
+            <div id="clock-container">     
+              <div id="clock">         
+                <div id="hour" class="hand" style="--color: #ff4d65; --height: 76px; --width: 4px"><i></i></div>         
+                <div id="minute" class="hand" style="--color: #00a6ff; --height: 86px; --width: 3px"><i></i></div>         
+                <div id="second" class="hand" style="--color: #ffffff; --height: 96px; --width: 2px"><i></i></div>         
+                <span style="--i: 1; --j: 0"><i>1</i></span>         
+                <span style="--i: 2; --j: 0"><i>2</i></span>         
+                <span style="--i: 3; --j: 3"><i>3</i></span>         
+                <span style="--i: 4; --j: 0"><i>4</i></span>         
+                <span style="--i: 5; --j: 0"><i>5</i></span>         
+                <span style="--i: 6; --j: 6"><i>6</i></span>         
+                <span style="--i: 7; --j: 0"><i>7</i></span>         
+                <span style="--i: 8; --j: 0"><i>8</i></span>         
+                <span style="--i: 9; --j: 9"><i>9</i></span>         
+                <span style="--i: 10; --j: 0"><i>10</i></span>         
+                <span style="--i: 11; --j: 0"><i>11</i></span>         
+                <span style="--i: 12; --j: 12"><i>12</i></span>     
+              </div> 
             </div>
+            <div class="digital-clock depth-effect" id="digitalClock">00:00</div>
             <div class="date-display depth-effect" id="dateDisplay"></div>
           </div>
 
