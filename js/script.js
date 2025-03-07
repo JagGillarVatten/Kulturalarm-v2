@@ -1,404 +1,341 @@
-// config
-const MUSIC_SUBJECTS = Object.freeze({
-  ENSEMBLE: "Ensemble",
-  GEHOR: "Gehör",
-  IMPROVISATION: "Improvisation",
-  MUSIKPRODUKTION: "Musikproduktion",
-  ESTETISK: "Estetisk kommunikation",
-  LUNCH: "Lunch",
-});
-
-const CONFIG = Object.freeze({
-  REFRESH_INTERVAL: 1000,
-  SHOW_TEACHERS: true,
-  MAX_TEACHERS: 1,
-  MAX_GROUPS: 12,
-  CACHE_NAME: "schema-cache",
-});
-
-const CACHE_CONFIG = {
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  version: "1.0",
-};
-
-const FORMATTERS = Object.freeze({
-  date: new Intl.DateTimeFormat("sv-SE", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }),
-  time: new Intl.DateTimeFormat("sv-SE", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }),
-});
-
-// dom
-const DOM_ELEMENTS = Object.freeze(
-  Object.fromEntries(
-    [
-      "hour",
-      "minute",
-      "second",
-      "dateDisplay",
-      "eventName",
-      "eventTeacher",
-      "eventTime",
-      "progressBar",
-      "currentEventHeader",
-      "scheduleBody",
-      "schemaSelect",
-      "eventStatus",
-      "scheduleError",
-      "scheduleErrorText",
-      "timeRemaining",
-      "digitalClock",
-    ].map((id) => [id, document.getElementById(id)])
-  )
-);
-
-// state
+const MUSIC_SUBJECTS = {
+    ENSEMBLE: "Ensemble",
+    GEHOR: "Gehör",
+    IMPROVISATION: "Improvisation",
+    MUSIKPRODUKTION: "Musikproduktion",
+    ESTETISK: "Estetisk kommunikation",
+    LUNCH: "Lunch",
+  },
+  CONFIG = {
+    REFRESH_INTERVAL: 1e3,
+    SHOW_TEACHERS: !0,
+    MAX_TEACHERS: 1,
+    MAX_GROUPS: 12,
+    CACHE_NAME: "schema-cache",
+  },
+  CACHE_CONFIG = { maxAge: 864e5, version: "1.0" },
+  FORMATTERS = {
+    date: new Intl.DateTimeFormat("sv-SE", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
+    time: new Intl.DateTimeFormat("sv-SE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  },
+  DOM_ELEMENTS = Object.freeze(
+    Object.fromEntries(
+      [
+        "hour",
+        "minute",
+        "second",
+        "dateDisplay",
+        "eventName",
+        "eventTeacher",
+        "eventTime",
+        "progressBar",
+        "currentEventHeader",
+        "scheduleBody",
+        "schemaSelect",
+        "eventStatus",
+        "scheduleError",
+        "scheduleErrorText",
+        "timeRemaining",
+        "digitalClock",
+        "customUrlInput",
+        "addCustomUrlBtn",
+        "removeCustomUrlBtn",
+      ].map((e) => [e, document.getElementById(e)])
+    )
+  );
 let state = {
   events: [],
   animationFrameId: null,
-  isLoading: false,
-  hasError: false,
+  isLoading: !1,
+  hasError: !1,
   errorMessage: "",
+  customUrls: JSON.parse(localStorage.getItem("customUrls") || "{}"),
 };
-
-// utils
-const debounce = (fn, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-};
-
-const formatTimeRemaining = (ms) => {
-  if (ms < 60000) return `${Math.floor(ms / 1000)}s`;
-  const minutes = Math.floor(ms / 60000),
-    hours = Math.floor(minutes / 60);
-  return hours > 0 ? `${hours}t ${minutes % 60}m` : `${minutes}m`;
-};
-
-// clock
+const debounce = (e, t) => {
+    let n;
+    return (...r) => {
+      clearTimeout(n), (n = setTimeout(() => e(...r), t));
+    };
+  },
+  formatTimeRemaining = (e) =>
+    e < 6e4
+      ? `${Math.floor(e / 1e3)}s`
+      : ((t = Math.floor(e / 6e4)),
+        (n = Math.floor(t / 60)),
+        n > 0 ? `${n}t ${t % 60}m` : `${t}m`);
+var t, n;
 const updateClock = () => {
-  const now = new Date();
-  const second = now.getSeconds();
-  const minute = now.getMinutes();
-  const hour = now.getHours() % 12;
-  
-  DOM_ELEMENTS.hour.style.transform = `rotate(${30 * hour + minute / 2}deg)`;
-  DOM_ELEMENTS.minute.style.transform = `rotate(${6 * minute}deg)`;
-  DOM_ELEMENTS.second.style.transform = `rotate(${6 * second}deg)`;
-  
-  // Update digital clock
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = minute.toString().padStart(2, '0');
-  DOM_ELEMENTS.digitalClock.textContent = `${hours}:${minutes}`;
-};
-
-// event Processing
-const parseEventInfo = (summary, description = "") => {
-  try {
-    const parts = summary.split(",").map((part) => part.trim());
-    const courseName = parts[0];
-    const teacher = parts.find((part) => !part.match(/AML|MP|LA/)) || "";
-
-    const groupRegex = /(AM|LA|MP)\d+[a-d]?/g;
-    const summaryGroups = summary.match(groupRegex) || [];
-    const descriptionGroups = description.match(groupRegex) || [];
-    const groups = [...new Set([...summaryGroups, ...descriptionGroups])];
-
-    const parsedGroups = groups.map((group) => {
-      const yearMatch = group.match(/\d+/);
-      const sectionMatch = group.match(/[a-d]$/);
-      const year = yearMatch ? yearMatch[0] : "";
-      const section = sectionMatch ? sectionMatch[0].toLowerCase() : "";
-
-      const programs = [];
-      const groupText = group.toUpperCase();
-
-      if (groupText.includes("AM")) programs.push(`AM${year}`);
-      if (groupText.includes("LA")) programs.push(`LA${year}`);
-      if (groupText.includes("MP")) programs.push(`MP${year}`);
-
-      const combinedPrograms = programs.join(" ");
-      return section ? `${combinedPrograms} ${section}` : combinedPrograms;
-    });
-
-    return {
-      courseName: courseName || "Okänd aktivitet",
-      teacher: teacher,
-      groups: parsedGroups,
-      rawDescription: description,
-    };
-  } catch (error) {
-    console.error("Error parsing event info:", error);
-    return {
-      courseName: summary || "Okänd aktivitet",
-      teacher: "",
-      groups: [],
-      rawDescription: description,
-    };
-  }
-};
-
-const processEvents = (data) => {
-  return new ICAL.Component(ICAL.parse(data))
-    .getAllSubcomponents("vevent")
-    .map((event) => {
-      const icalEvent = new ICAL.Event(event);
-      const description = event.getFirstPropertyValue("description") || "";
+    const e = new Date(),
+      t = e.getSeconds(),
+      n = e.getMinutes(),
+      r = e.getHours() % 12;
+    (DOM_ELEMENTS.hour.style.transform = `rotate(${30 * r + n / 2}deg)`),
+      (DOM_ELEMENTS.minute.style.transform = `rotate(${6 * n}deg)`),
+      (DOM_ELEMENTS.second.style.transform = `rotate(${6 * t}deg)`),
+      (DOM_ELEMENTS.digitalClock.textContent = `${e
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:${n.toString().padStart(2, "0")}`);
+  },
+  parseEventInfo = (e, t = "") => {
+    try {
+      const n = e.split(",").map((e) => e.trim()),
+        r = n[0],
+        s = n.find((e) => !e.match(/AML|MP|LA/)) || "",
+        a = /(AM|LA|MP)\d+[a-d]?/g,
+        o = e.match(a) || [],
+        i = t.match(a) || [],
+        c = [...new Set([...o, ...i])].map((e) => {
+          const t = e.match(/\d+/),
+            n = e.match(/[a-d]$/),
+            r = t ? t[0] : "",
+            s = n ? n[0].toLowerCase() : "",
+            a = [];
+          return (
+            e.toUpperCase().includes("AM") && a.push(`AM${r}`),
+            e.toUpperCase().includes("LA") && a.push(`LA${r}`),
+            e.toUpperCase().includes("MP") && a.push(`MP${r}`),
+            s ? `${a.join(" ")} ${s}` : a.join(" ")
+          );
+        });
       return {
-        ...parseEventInfo(icalEvent.summary, description),
-        startDate: icalEvent.startDate.toJSDate(),
-        endDate: icalEvent.endDate.toJSDate(),
+        courseName: r || "Okänd aktivitet",
+        teacher: s,
+        groups: c,
+        rawDescription: t,
       };
-    })
-    .reduce((acc, curr) => {
-      const overlap = acc.find(
-        (event) =>
-          (curr.startDate >= event.startDate &&
-            curr.startDate <= event.endDate) ||
-          (curr.endDate >= event.startDate && curr.endDate <= event.endDate)
+    } catch (n) {
+      return (
+        console.error("Error parsing event info:", n),
+        {
+          courseName: e || "Okänd aktivitet",
+          teacher: "",
+          groups: [],
+          rawDescription: t,
+        }
       );
-
-      if (!overlap) return [...acc, curr];
-
-      if (overlap.courseName === curr.courseName) {
-        overlap.teacher = [overlap.teacher, curr.teacher]
-          .filter(Boolean)
-          .join(", ");
-        overlap.groups = [...new Set([...overlap.groups, ...curr.groups])];
-      } else {
-        overlap.courseName += ` / ${curr.courseName}`;
-        overlap.teacher = [overlap.teacher, curr.teacher]
-          .filter(Boolean)
-          .join(", ");
-        overlap.groups = [...new Set([...overlap.groups, ...curr.groups])];
+    }
+  },
+  processEvents = (e) =>
+    new ICAL.Component(ICAL.parse(e))
+      .getAllSubcomponents("vevent")
+      .map((e) => {
+        const t = new ICAL.Event(e),
+          n = e.getFirstPropertyValue("description") || "";
+        return {
+          ...parseEventInfo(t.summary, n),
+          startDate: t.startDate.toJSDate(),
+          endDate: t.endDate.toJSDate(),
+        };
+      })
+      .reduce((e, t) => {
+        const n = e.find(
+          (e) =>
+            (t.startDate >= e.startDate && t.startDate <= e.endDate) ||
+            (t.endDate >= e.startDate && t.endDate <= e.endDate)
+        );
+        return n
+          ? (n.courseName === t.courseName
+              ? ((n.teacher = [n.teacher, t.teacher]
+                  .filter(Boolean)
+                  .join(", ")),
+                (n.groups = [...new Set([...n.groups, ...t.groups])]))
+              : ((n.courseName += ` / ${t.courseName}`),
+                (n.teacher = [n.teacher, t.teacher].filter(Boolean).join(", ")),
+                (n.groups = [...new Set([...n.groups, ...t.groups])])),
+            e)
+          : [...e, t];
+      }, [])
+      .sort((e, t) => e.startDate - t.startDate),
+  updateUIState = () => {
+    document
+      .querySelectorAll(".schedule-table, .current-event")
+      .forEach((e) => {
+        e.classList.toggle("loading", state.isLoading);
+      }),
+      (DOM_ELEMENTS.scheduleError.style.display = state.hasError
+        ? "flex"
+        : "none"),
+      state.hasError &&
+        (DOM_ELEMENTS.scheduleErrorText.textContent = state.errorMessage);
+  },
+  updateDisplay = (() => {
+    let e = 0;
+    const t = () => {
+      const n = new Date();
+      if (!(n - e < CONFIG.REFRESH_INTERVAL)) {
+        (e = n),
+          (DOM_ELEMENTS.dateDisplay.textContent = FORMATTERS.date.format(n));
+        const r = state.events.find((e) => n >= e.startDate && n <= e.endDate),
+          s = state.events.find((e) => n < e.startDate);
+        if (
+          (r
+            ? ((DOM_ELEMENTS.eventStatus.textContent = "● Pågår nu"),
+              (DOM_ELEMENTS.eventStatus.className =
+                "event-status status-ongoing"),
+              (DOM_ELEMENTS.eventName.textContent = r.courseName),
+              (DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
+                ? r.teacher
+                : ""),
+              (DOM_ELEMENTS.eventTime.textContent = `Slutar ${FORMATTERS.time.format(
+                r.endDate
+              )}`),
+              (DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(
+                r.endDate - n
+              )))
+            : s
+            ? ((DOM_ELEMENTS.eventStatus.textContent = "○ Kommande"),
+              (DOM_ELEMENTS.eventStatus.className =
+                "event-status status-upcoming"),
+              (DOM_ELEMENTS.eventName.textContent = s.courseName),
+              (DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
+                ? s.teacher
+                : ""),
+              (DOM_ELEMENTS.eventTime.textContent = `Börjar ${FORMATTERS.time.format(
+                s.startDate
+              )}`),
+              (DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(
+                s.startDate - n
+              )))
+            : ((DOM_ELEMENTS.eventStatus.textContent =
+                "Inga fler aktiviteter idag"),
+              (DOM_ELEMENTS.eventStatus.className = "event-status"),
+              (DOM_ELEMENTS.eventName.textContent =
+                "Inga fler aktiviteter idag"),
+              (DOM_ELEMENTS.eventTeacher.textContent = ""),
+              (DOM_ELEMENTS.eventTime.textContent = ""),
+              (DOM_ELEMENTS.timeRemaining.textContent = "")),
+          r)
+        ) {
+          const e = r.endDate - r.startDate,
+            t = ((n - r.startDate) / e) * 100;
+          DOM_ELEMENTS.progressBar.style.width = `${t}%`;
+        } else DOM_ELEMENTS.progressBar.style.width = "0";
       }
-      return acc;
-    }, [])
-    .sort((a, b) => a.startDate - b.startDate);
-};
-
-// ui
-const updateUIState = () => {
-  document.querySelectorAll(".schedule-table, .current-event").forEach((el) => {
-    el.classList.toggle("loading", state.isLoading);
-  });
-
-  DOM_ELEMENTS.scheduleError.style.display = state.hasError ? "flex" : "none";
-  if (state.hasError) {
-    DOM_ELEMENTS.scheduleErrorText.textContent = state.errorMessage;
-  }
-};
-
-const getEventMessage = (event, timeStr) => {
-  const subject = Object.entries(MUSIC_SUBJECTS).find(([, value]) =>
-    event.courseName.includes(value)
-  );
-  return subject ? MESSAGES[subject[1]] : `${timeStr} kvar`;
-};
-
-const updateDisplay = (() => {
-  let lastUpdate = 0,
-    lastEvent = null;
-
-  const update = () => {
-    const now = new Date();
-    if (now - lastUpdate < CONFIG.REFRESH_INTERVAL) return;
-    lastUpdate = now;
-
-    DOM_ELEMENTS.dateDisplay.textContent = FORMATTERS.date.format(now);
-
-    const currentEvent = state.events.find(
-      (event) => now >= event.startDate && now <= event.endDate
+    };
+    return (
+      requestAnimationFrame(function e() {
+        t(), (state.animationFrameId = requestAnimationFrame(e));
+      }),
+      t
     );
-
-    const nextEvent = state.events.find((event) => now < event.startDate);
-
-    if (currentEvent) {
-      DOM_ELEMENTS.eventStatus.textContent = "● Pågår nu";
-      DOM_ELEMENTS.eventStatus.className = "event-status status-ongoing";
-      DOM_ELEMENTS.eventName.textContent = currentEvent.courseName;
-      DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
-        ? currentEvent.teacher
-        : "";
-      const endTime = FORMATTERS.time.format(currentEvent.endDate);
-      DOM_ELEMENTS.eventTime.textContent = `Slutar ${endTime}`;
-      const timeLeft = currentEvent.endDate - now;
-      DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(timeLeft);
-    } else if (nextEvent) {
-      DOM_ELEMENTS.eventStatus.textContent = "○ Kommande";
-      DOM_ELEMENTS.eventStatus.className = "event-status status-upcoming";
-      DOM_ELEMENTS.eventName.textContent = nextEvent.courseName;
-      DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
-        ? nextEvent.teacher
-        : "";
-      const startTime = FORMATTERS.time.format(nextEvent.startDate);
-      DOM_ELEMENTS.eventTime.textContent = `Börjar ${startTime}`;
-      const timeUntilStart = nextEvent.startDate - now;
-      DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(timeUntilStart);
-    } else {
-      DOM_ELEMENTS.eventStatus.textContent = "Inga fler aktiviteter idag";
-      DOM_ELEMENTS.eventStatus.className = "event-status";
-      DOM_ELEMENTS.eventName.textContent = "Inga fler aktiviteter idag";
-      DOM_ELEMENTS.eventTeacher.textContent = "";
-      DOM_ELEMENTS.eventTime.textContent = "";
-      DOM_ELEMENTS.timeRemaining.textContent = "";
-    }
-
-    if (currentEvent) {
-      const total = currentEvent.endDate - currentEvent.startDate,
-        elapsed = now - currentEvent.startDate,
-        progress = (elapsed / total) * 100;
-      DOM_ELEMENTS.progressBar.style.transform = `scaleX(${progress / 100})`;
-    } else {
-      DOM_ELEMENTS.progressBar.style.transform = "scaleX(0)";
-    }
+  })(),
+  updateScheduleTable = () => {
+    if (!DOM_ELEMENTS.scheduleBody) return;
+    const e = new Date(),
+      t = new Date(e);
+    t.setHours(0, 0, 0, 0);
+    const n = new Date(e);
+    n.setHours(23, 59, 59, 999),
+      (DOM_ELEMENTS.scheduleBody.innerHTML = state.events
+        .filter(
+          (e) =>
+            (e.startDate >= t && e.startDate <= n) ||
+            (e.endDate >= t && e.endDate <= n) ||
+            (e.startDate <= t && e.endDate >= n)
+        )
+        .map((t) => {
+          const n = FORMATTERS.time.format(t.startDate),
+            r = FORMATTERS.time.format(t.endDate);
+          return `<tr class="${
+            e >= t.startDate && e <= t.endDate ? "current" : ""
+          }"><td>${n} - ${r}</td><td>${
+            t.courseName
+          }</td><td>${formatTimeRemaining(
+            t.endDate - t.startDate
+          )}</td><td>${t.groups
+            .slice(0, CONFIG.MAX_GROUPS)
+            .join(", ")}</td></tr>`;
+        })
+        .join(""));
+  },
+  toggleSchedule = () => {
+    document.querySelector(".schedule-table").classList.toggle("visible");
   };
-
-  const animate = () => {
-    update();
-    state.animationFrameId = requestAnimationFrame(animate);
-  };
-
-  requestAnimationFrame(animate);
-  return update;
-})();
-
-const updateScheduleTable = () => {
-  if (!DOM_ELEMENTS.scheduleBody) return;
-
-  const now = new Date();
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(now);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const todayEvents = state.events.filter(
-    (event) =>
-      (event.startDate >= startOfDay && event.startDate <= endOfDay) ||
-      (event.endDate >= startOfDay && event.endDate <= endOfDay) ||
-      (event.startDate <= startOfDay && event.endDate >= endOfDay)
-  );
-
-  DOM_ELEMENTS.scheduleBody.innerHTML = todayEvents
-    .map((event) => {
-      const startTime = FORMATTERS.time.format(event.startDate),
-        endTime = FORMATTERS.time.format(event.endDate),
-        duration = formatTimeRemaining(event.endDate - event.startDate);
-
-      return `
-                <tr class="${
-                  now >= event.startDate && now <= event.endDate
-                    ? "current"
-                    : ""
-                }">
-                    <td>${startTime} - ${endTime}</td>
-                    <td>${event.courseName}</td>
-                    <td>${duration}</td>
-                    <td>${event.groups
-                      .slice(0, CONFIG.MAX_GROUPS)
-                      .join(", ")}</td>
-                </tr>
-            `;
-    })
-    .join("");
-};
-
-const toggleSchedule = () => {
-  document.querySelector(".schedule-table").classList.toggle("visible");
-};
-
-// api
-async function fetchTimeditSchedule() {
+async function fetchTimeditSchedule(e) {
   try {
-    state.isLoading = true;
-    updateUIState();
-
-    const response = await fetch(CONFIG.TIMEDIT_URL);
-    if (!response.ok) {
-      throw new Error("Failed to fetch schedule from Timedit");
-    }
-
-    const icsData = await response.text();
-
-    localStorage.setItem("mp2_schedule", icsData);
-    localStorage.setItem("last_schedule_fetch", Date.now().toString());
-
-    state.events = processEvents(icsData);
-
-    state.isLoading = false;
-    state.hasError = false;
-    updateUIState();
-    updateDisplay();
-    updateScheduleTable();
-  } catch (error) {
-    console.error("Error fetching Timedit schedule:", error);
-    state.isLoading = false;
-    state.hasError = true;
-    state.errorMessage = "Failed to fetch schedule. Please try again later.";
-    updateUIState();
+    (state.isLoading = !0), updateUIState();
+    const t = await fetch(e);
+    if (!t.ok) throw new Error("Failed to fetch schedule from Timedit");
+    const n = await t.text();
+    localStorage.setItem("current_schedule", n),
+      localStorage.setItem("last_schedule_fetch", Date.now().toString()),
+      (state.events = processEvents(n)),
+      (state.isLoading = !1),
+      (state.hasError = !1),
+      updateUIState(),
+      updateDisplay(),
+      updateScheduleTable();
+  } catch (t) {
+    console.error("Error fetching Timedit schedule:", t),
+      (state.isLoading = !1),
+      (state.hasError = !0),
+      (state.errorMessage =
+        "Failed to fetch schedule. Please try again later."),
+      updateUIState();
   }
 }
-
-// cache
-function checkAndUpdateSchedule() {
-  const lastFetch = localStorage.getItem("last_schedule_fetch");
-  const currentTime = Date.now();
-
-  if (
-    !lastFetch ||
-    currentTime - parseInt(lastFetch) > CONFIG.AUTO_FETCH_INTERVAL
-  ) {
-    fetchTimeditSchedule();
-  }
-}
-
-const clearStaleCache = () => {
-  const cacheTimestamp = localStorage.getItem("cache_timestamp");
-  if (
-    cacheTimestamp &&
-    Date.now() - parseInt(cacheTimestamp) > CACHE_CONFIG.maxAge
-  ) {
-    localStorage.removeItem("mp2_schedule");
-    localStorage.removeItem("cache_timestamp");
-  }
-};
-
-// init
+const addCustomUrl = () => {
+    const e = DOM_ELEMENTS.customUrlInput.value.trim();
+    if (!e) return;
+    const t = prompt("Enter a name for this schedule:");
+    if (!t) return;
+    (state.customUrls[t] = e),
+      localStorage.setItem("customUrls", JSON.stringify(state.customUrls));
+    const n = document.createElement("option");
+    (n.value = `custom_${t}`),
+      (n.textContent = t),
+      DOM_ELEMENTS.schemaSelect.appendChild(n),
+      (DOM_ELEMENTS.customUrlInput.value = "");
+  },
+  removeCustomUrl = () => {
+    const e = DOM_ELEMENTS.schemaSelect.value;
+    if (!e.startsWith("custom_"))
+      return void alert("Please select a custom schedule to remove");
+    const t = e.replace("custom_", "");
+    confirm(`Are you sure you want to remove the schedule "${t}"?`) &&
+      (delete state.customUrls[t],
+      localStorage.setItem("customUrls", JSON.stringify(state.customUrls)),
+      DOM_ELEMENTS.schemaSelect.querySelector(`option[value="${e}"]`).remove(),
+      (DOM_ELEMENTS.schemaSelect.value = "mp1"),
+      switchSchedule("mp1"));
+  },
+  switchSchedule = async (e) => {
+    if ((cleanupResources(), e.startsWith("custom_"))) {
+      const t = e.replace("custom_", ""),
+        n = state.customUrls[t];
+      n && (await fetchTimeditSchedule(n));
+    } else await loadSchema(e);
+    localStorage.setItem("lastSelectedSchema", e);
+  },
+  initializeCustomUrls = () => {
+    Object.keys(state.customUrls).forEach((e) => {
+      const t = document.createElement("option");
+      (t.value = `custom_${e}`),
+        (t.textContent = e),
+        DOM_ELEMENTS.schemaSelect.appendChild(t);
+    });
+  };
 DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
-  const selectedSchema = e.target.value;
-  localStorage.setItem("lastSelectedSchema", selectedSchema);
-  loadSchema(selectedSchema);
-});
-
-const savedSchema = localStorage.getItem("lastSelectedSchema") || "mp1";
-DOM_ELEMENTS.schemaSelect.value = savedSchema;
-if (savedSchema === "mp2") {
-  const cachedSchedule = localStorage.getItem("mp2_schedule");
-  if (cachedSchedule) {
-    state.events = processEvents(cachedSchedule);
-    updateDisplay();
-    updateScheduleTable();
-  } else {
-    fetchTimeditSchedule();
-  }
-} else {
-  loadSchema(savedSchema);
-}
-setInterval(updateDisplay, CONFIG.REFRESH_INTERVAL);
-setInterval(updateClock, 1000);
-updateClock();
-
+  switchSchedule(e.target.value);
+}),
+  DOM_ELEMENTS.addCustomUrlBtn.addEventListener("click", addCustomUrl);
+const savedSchema = localStorage.getItem("lastSelectedSchema") || "mp2";
+(DOM_ELEMENTS.schemaSelect.value = savedSchema),
+  initializeCustomUrls(),
+  switchSchedule(savedSchema),
+  setInterval(updateDisplay, CONFIG.REFRESH_INTERVAL),
+  setInterval(updateClock, 1e3),
+  updateClock();
 const cleanupResources = () => {
-  if (state.animationFrameId) {
-    cancelAnimation
-  }
-  state.events = [];
+  state.animationFrameId && cancelAnimationFrame(state.animationFrameId),
+    (state.events = []);
 };

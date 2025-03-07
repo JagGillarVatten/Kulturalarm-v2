@@ -14,10 +14,10 @@
     --radius-base: 10px;
 }
 
-html {height: 100%;}
+html {height: 100%; lang: sv;}
 
 body {
-    font-family: 'inter', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-text);
@@ -149,6 +149,26 @@ body {
     transform: translateY(0);
 }
 
+.schedule-header {
+    margin-bottom: calc(var(--spacing) * 2);
+}
+
+.schedule-header h3 {
+    margin: 0;
+    color: var(--color-text);
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing));
+    color: var(--color-text);
+    background: rgba(255, 0, 0, 0.1);
+    padding: calc(var(--spacing));
+    border-radius: var(--radius-base);
+    margin-top: calc(var(--spacing));
+}
+
 table {
     width: 100%;
     border-collapse: separate;
@@ -186,7 +206,7 @@ tr.ongoing {font-weight: bold;}
     justify-content: center;
 }
 
-.schedule-select, .btn {
+.schedule-select, .btn, .schedule-input {
     padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
     border: none;
     border-radius: var(--radius-base);
@@ -197,6 +217,12 @@ tr.ongoing {font-weight: bold;}
     font-size: calc(var(--font-base) * 0.9);
     width: 100%;
     max-width: 200px;
+}
+
+.schedule-input {
+    background: var(--ui-container-backdrop);
+    color: var(--color-text);
+    cursor: text;
 }
 
 .schedule-select:hover, .btn:hover {
@@ -223,6 +249,12 @@ tr.ongoing {font-weight: bold;}
     color: var(--color-text);
 }
 
+.time-remaining {
+    margin-top: calc(var(--spacing));
+    color: var(--color-text);
+    font-weight: 500;
+}
+
 .date-display {
     font-size: clamp(1.5rem, 2vw, calc(var(--font-base) * 2));
     margin: calc(var(--spacing) * 2) 0;
@@ -235,12 +267,26 @@ tr.ongoing {font-weight: bold;}
     backdrop-filter: blur(8px);
 }
 
+noscript .error-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-accent);
+    color: white;
+    padding: calc(var(--spacing) * 2);
+    border-radius: var(--radius-base);
+    text-align: center;
+    max-width: 80%;
+}
+
 @media (max-width: 768px) {
     .container {margin: 0; padding: calc(var(--spacing) * 1.5);}
     .main-content {flex-direction: column; gap: calc(var(--spacing) * 2);}
     .left-panel, .right-panel {width: 100%;}
     .digital-clock {font-size: clamp(1.2rem, 4vw, 2rem);}
     th, td {padding: calc(var(--spacing) * 1.5); font-size: .9rem;}
+    .schedule-select, .btn, .schedule-input {max-width: 100%;}
 }
 
 @media (max-width: 480px) {
