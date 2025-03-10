@@ -10,7 +10,7 @@ const MUSIC_SUBJECTS = {
     REFRESH_INTERVAL: 1e3,
     SHOW_TEACHERS: !0,
     MAX_TEACHERS: 1,
-    MAX_GROUPS: 12,
+    MAX_GROUPS: 1,
     CACHE_NAME: "schema-cache",
   },
   CACHE_CONFIG = { maxAge: 864e5, version: "1.0" },
@@ -48,6 +48,8 @@ const MUSIC_SUBJECTS = {
         "customUrlInput",
         "addCustomUrlBtn",
         "removeCustomUrlBtn",
+        "manageCustomSchemasBtn",
+        "customUrlContainer",
       ].map((e) => [e, document.getElementById(e)])
     )
   );
@@ -58,6 +60,7 @@ let state = {
   hasError: !1,
   errorMessage: "",
   customUrls: JSON.parse(localStorage.getItem("customUrls") || "{}"),
+  isManagingCustomSchemas: false,
 };
 const debounce = (e, t) => {
     let n;
@@ -90,7 +93,7 @@ const updateClock = () => {
       const n = e.split(",").map((e) => e.trim()),
         r = n[0],
         s = n.find((e) => !e.match(/AML|MP|LA/)) || "",
-        a = /(AM|LA|MP)\d+[a-d]?/g,
+        a = /(?:AM|LA|MP)\d+[a-d]?/g,
         o = e.match(a) || [],
         i = t.match(a) || [],
         c = [...new Set([...o, ...i])].map((e) => {
@@ -99,12 +102,18 @@ const updateClock = () => {
             r = t ? t[0] : "",
             s = n ? n[0].toLowerCase() : "",
             a = [];
-          return (
-            e.toUpperCase().includes("AM") && a.push(`AM${r}`),
-            e.toUpperCase().includes("LA") && a.push(`LA${r}`),
-            e.toUpperCase().includes("MP") && a.push(`MP${r}`),
-            s ? `${a.join(" ")} ${s}` : a.join(" ")
-          );
+          
+          if (e.includes("AML")) {
+            a.push(`AM${r}`);
+            a.push(`LA${r}`);
+            a.push(`MP${r}`);
+          } else {
+            if (e.includes("AM")) a.push(`AM${r}`);
+            if (e.includes("LA")) a.push(`LA${r}`);
+            if (e.includes("MP")) a.push(`MP${r}`);
+          }
+
+          return s ? `${a.join(" ")} ${s}` : a.join(" ");
         });
       return {
         courseName: r || "Okänd aktivitet",
@@ -166,6 +175,8 @@ const updateClock = () => {
         : "none"),
       state.hasError &&
         (DOM_ELEMENTS.scheduleErrorText.textContent = state.errorMessage);
+    
+    DOM_ELEMENTS.customUrlContainer.style.display = state.isManagingCustomSchemas ? "block" : "none";
   },
   updateDisplay = (() => {
     let e = 0;
@@ -177,7 +188,7 @@ const updateClock = () => {
         const r = state.events.find((e) => n >= e.startDate && n <= e.endDate),
           s = state.events.find((e) => n < e.startDate);
         if (
-          (r
+          (r && r.courseName.toLowerCase() !== "lunch"
             ? ((DOM_ELEMENTS.eventStatus.textContent = "● Pågår nu"),
               (DOM_ELEMENTS.eventStatus.className =
                 "event-status status-ongoing"),
@@ -213,7 +224,7 @@ const updateClock = () => {
               (DOM_ELEMENTS.eventTeacher.textContent = ""),
               (DOM_ELEMENTS.eventTime.textContent = ""),
               (DOM_ELEMENTS.timeRemaining.textContent = "")),
-          r)
+          r && r.courseName.toLowerCase() !== "lunch")
         ) {
           const e = r.endDate - r.startDate,
             t = ((n - r.startDate) / e) * 100;
@@ -323,11 +334,19 @@ const addCustomUrl = () => {
         (t.textContent = e),
         DOM_ELEMENTS.schemaSelect.appendChild(t);
     });
+  },
+  toggleCustomSchemaManager = () => {
+    state.isManagingCustomSchemas = !state.isManagingCustomSchemas;
+    updateUIState();
   };
+
 DOM_ELEMENTS.schemaSelect.addEventListener("change", (e) => {
   switchSchedule(e.target.value);
 }),
   DOM_ELEMENTS.addCustomUrlBtn.addEventListener("click", addCustomUrl);
+DOM_ELEMENTS.removeCustomUrlBtn.addEventListener("click", removeCustomUrl);
+DOM_ELEMENTS.manageCustomSchemasBtn.addEventListener("click", toggleCustomSchemaManager);
+
 const savedSchema = localStorage.getItem("lastSelectedSchema") || "mp2";
 (DOM_ELEMENTS.schemaSelect.value = savedSchema),
   initializeCustomUrls(),
@@ -339,3 +358,6 @@ const cleanupResources = () => {
   state.animationFrameId && cancelAnimationFrame(state.animationFrameId),
     (state.events = []);
 };
+
+// Initial UI state
+updateUIState();

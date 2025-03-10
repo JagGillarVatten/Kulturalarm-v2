@@ -88,6 +88,18 @@
           <option value="mp2">Mp2</option>
           <option value="am2">Am2</option>
         </select>
+        <div id="customUrlContainer" class="custom-url-controls" style="display: none;">
+          <input type="text" id="customUrlInput" placeholder="Lägg till TimeEdit URL" class="depth-effect" />
+          <button id="addCustomUrlBtn" class="btn depth-effect" aria-label="Lägg till anpassad URL">
+            Lägg till URL
+          </button>
+          <button id="removeCustomUrlBtn" class="btn depth-effect" aria-label="Ta bort anpassad URL">
+            Ta bort URL
+          </button>
+        </div>
+        <button id="manageCustomSchemasBtn" class="btn depth-effect" aria-label="Hantera anpassade scheman">
+          Hantera scheman
+        </button>
         <button class="btn depth-effect" onclick="toggleSchedule()" aria-label="Visa eller dölj dagens schema">
           Visa dagens schema
         </button>

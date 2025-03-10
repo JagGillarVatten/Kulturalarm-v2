@@ -14,7 +14,9 @@
     --radius-base: 10px;
 }
 
-html {height: 100%; lang: sv;}
+html {
+    height: 100%;
+}
 
 body {
     font-family: 'Inter', sans-serif;
@@ -267,6 +269,28 @@ tr.ongoing {font-weight: bold;}
     backdrop-filter: blur(8px);
 }
 
+.custom-url-controls {
+    display: flex;
+    gap: calc(var(--spacing));
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+#customUrlInput {
+    flex: 1;
+    min-width: 200px;
+    padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
+    border: none;
+    border-radius: var(--radius-base);
+    background: var(--ui-container-backdrop);
+    color: var(--color-text);
+    font-size: calc(var(--font-base) * 0.9);
+}
+
+#addCustomUrlBtn, #removeCustomUrlBtn {
+    min-width: 120px;
+}
+
 noscript .error-message {
     position: fixed;
     top: 50%;
@@ -280,6 +304,20 @@ noscript .error-message {
     max-width: 80%;
 }
 
+.event-status {
+    padding: calc(var(--spacing));
+    border-radius: var(--radius-base);
+    margin-bottom: calc(var(--spacing));
+}
+
+.status-ongoing {
+    color: var(--color-accent);
+}
+
+.status-upcoming {
+    color: var(--color-secondary);
+}
+
 @media (max-width: 768px) {
     .container {margin: 0; padding: calc(var(--spacing) * 1.5);}
     .main-content {flex-direction: column; gap: calc(var(--spacing) * 2);}
@@ -287,6 +325,9 @@ noscript .error-message {
     .digital-clock {font-size: clamp(1.2rem, 4vw, 2rem);}
     th, td {padding: calc(var(--spacing) * 1.5); font-size: .9rem;}
     .schedule-select, .btn, .schedule-input {max-width: 100%;}
+    .custom-url-controls {flex-direction: column;}
+    #customUrlInput {width: 100%; min-width: unset;}
+    #addCustomUrlBtn, #removeCustomUrlBtn {width: 100%;}
 }
 
 @media (max-width: 480px) {
