@@ -61,6 +61,7 @@ let state = {
   errorMessage: "",
   customUrls: JSON.parse(localStorage.getItem("customUrls") || "{}"),
   isManagingCustomSchemas: false,
+  lastSelectedSchema: localStorage.getItem("lastSelectedSchema") || "mp2"
 };
 const debounce = (e, t) => {
     let n;
@@ -316,8 +317,8 @@ const addCustomUrl = () => {
       (delete state.customUrls[t],
       localStorage.setItem("customUrls", JSON.stringify(state.customUrls)),
       DOM_ELEMENTS.schemaSelect.querySelector(`option[value="${e}"]`).remove(),
-      (DOM_ELEMENTS.schemaSelect.value = "mp1"),
-      switchSchedule("mp1"));
+      (DOM_ELEMENTS.schemaSelect.value = state.lastSelectedSchema),
+      switchSchedule(state.lastSelectedSchema));
   },
   switchSchedule = async (e) => {
     if ((cleanupResources(), e.startsWith("custom_"))) {
@@ -325,6 +326,7 @@ const addCustomUrl = () => {
         n = state.customUrls[t];
       n && (await fetchTimeditSchedule(n));
     } else await loadSchema(e);
+    state.lastSelectedSchema = e;
     localStorage.setItem("lastSelectedSchema", e);
   },
   initializeCustomUrls = () => {

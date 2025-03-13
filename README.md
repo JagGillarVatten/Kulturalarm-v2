@@ -1,18 +1,24 @@
-# Kulturalarm-v2
+	Idéhistoria 1600-talet
 
-## Instruktioner för att lägga till ditt schema
+	1. Absoluta kungamakten:
+	- Hobbes: Människan är egoistisk, behöver stark härskare för att undvika kaos
+	- Bossuet: Kungen har makt från Gud, medborgare ska lyda både Gud och kung
 
-1. Gå till TimeEdit och öppna ditt personliga schema
-2. Klicka på knappen "Prenumerera"
-   ![alt text](tutorial1.png)
+	2. Vetenskapliga framsteg:
+	- Gjordes i privata samfund (Royal Society, Académie Royal) istället för universitet
+	- Universitet fokuserade på religion och antika texter
+	- Viktiga upptäckter:
+		* Newton: Gravitationsteorin, bevisade heliocentrisk världsbild
+		* Harvey: Bevisade blodomloppet
 
-3. I rutan som visas, klicka på "Kopiera"-knappen
-   ![alt text](tutorial2.png)
+	3. Empirism vs Rationalism:
+	- Rationalism (Descartes): Förnuftet enda vägen till sanning, "Cogito ergo sum"
+	- Empirism (Bacon): Kunskap genom observation och experiment
+	- Empirism (Locke): "Tabula rasa", erfarenheter ger kunskap
 
-4. Öppna Kulturalarm v2
-5. Gå till "Hantera scheman"
-6. Klistra in den kopierade länken i textrutan
-7. Klicka på "Lägg till URL"
-8. Namnge ditt schema
-
-Klart! Nu har du lagt till ditt personliga schema i Kulturalarm v2.
+	4. Lockes naturrätt:
+	- Medfödda rättigheter: liv, frihet, egendom
+	- Statens makt kommer från folket, inte Gud
+	- Rätt till uppror om staten bryter mot naturrätten
+	- Förespråkade maktdelning
+	- Grund för upplysning och revolutioner
