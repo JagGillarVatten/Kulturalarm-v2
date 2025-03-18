@@ -71,7 +71,7 @@ body {
     background: linear-gradient(170deg, rgba(49,57,73,.8) 20%, rgba(49,57,73,.5) 20%, rgba(49,57,73,.5) 35%, rgba(41,48,61,.6) 35%, rgba(41,48,61,.8) 45%, rgba(31,36,46,.5) 45%, rgba(31,36,46,.8) 75%, rgba(49,57,73,.5) 75%), linear-gradient(45deg, rgba(20,24,31,.8) 0%, rgba(41,48,61,.8) 50%, rgba(82,95,122,.8) 50%, rgba(133,146,173,.8) 100%) #313949;
 }
 
-.digital-clock {
+.digital-clock, .date-display {
     font-size: clamp(1.5rem, 2.5vw, 2.5rem);
     font-weight: 600;
     color: var(--color-text);
@@ -80,7 +80,9 @@ body {
     text-align: center;
 }
 
-.depth-effect {box-shadow: 0 4px 6px rgba(0,0,0,.02);}
+.depth-effect {
+    box-shadow: 0 4px 6px rgba(0,0,0,.02);
+}
 
 #clock span {
     position: absolute;
@@ -124,13 +126,30 @@ body {
     border-radius: 8px;
 }
 
+.current-event {
+    margin-top: calc(var(--spacing) * 2);
+    padding: calc(var(--spacing) * 2);
+    background-color: var(--ui-container-backdrop);
+    border-radius: var(--radius-base);
+}
+
+.event-status {
+    margin-bottom: calc(var(--spacing));
+    font-weight: bold;
+}
+
+.event-details {
+    display: grid;
+    gap: calc(var(--spacing));
+}
+
 .progress-bar {
     width: 100%;
     height: calc(var(--spacing) * 4);
     background: var(--ui-progress-bg);
     border-radius: var(--radius-base);
     overflow: hidden;
-    margin: calc(var(--spacing) * 4) 0;
+    margin-top: calc(var(--spacing) * 2);
 }
 
 .progress {
@@ -197,8 +216,7 @@ th {
 }
 
 tr:hover {background: var(--ui-table-hover);}
-tr.completed {opacity: .5;}
-tr.ongoing {font-weight: bold;}
+tr.current {font-weight: bold;}
 
 .controls {
     display: flex;
@@ -281,7 +299,7 @@ noscript .error-message {
     .container {margin: 0; padding: calc(var(--spacing) * 1.5);}
     .main-content {flex-direction: column; gap: calc(var(--spacing) * 2);}
     .left-panel, .right-panel {width: 100%;}
-    .digital-clock {font-size: clamp(1.2rem, 4vw, 2rem);}
+    .digital-clock, .date-display {font-size: clamp(1.2rem, 4vw, 2rem);}
     th, td {padding: calc(var(--spacing) * 1.5); font-size: .9rem;}
     .schedule-select, .btn, .schedule-input {max-width: 100%;}
     .custom-url-controls {flex-direction: column;}
