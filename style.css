@@ -1,13 +1,13 @@
 :root {
-    --color-primary: #8B4367;
-    --color-secondary: hsl(22, 83%, 72%);
-    --color-background: #924f5b;
-    --color-text: #4A1E2E;
-    --color-accent: #9B59B6;
-    --ui-container-backdrop: #FFD1B2;
-    --ui-table-hover: rgb(210, 150, 190);
-    --ui-table-border: rgba(45, 30, 40, 0.2);
-    --ui-progress-bg: rgba(0, 0, 0, 0.15);
+    --color-primary: #a84b4b;
+    --color-secondary: hsl(19, 97%, 61%);
+    --color-background: #c45656;
+    --color-text: #6a1717;
+    --color-accent: #e66a6a;
+    --ui-container-backdrop: #ffceb2;
+    --ui-table-hover: rgb(e6b3c9);
+    --ui-table-border: rgba(37, 26, 26, 0.2);
+    --ui-progress-bg: rgba(0, 0, 0, 0.2);
     --size-multiplier: 1.0;
     --spacing: 8px;
     --font-base: 1rem;
@@ -206,10 +206,6 @@ tr.ongoing {font-weight: bold;}
     margin-top: calc(var(--spacing) * 2);
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .schedule-select, .btn, .schedule-input {
@@ -221,9 +217,56 @@ tr.ongoing {font-weight: bold;}
     cursor: pointer;
     transition: .3s cubic-bezier(.4,0,.2,1);
     font-size: calc(var(--font-base) * 0.9);
-    width: auto;
+    width: 100%;
     max-width: 200px;
-    flex-grow: 0;
+}
+
+.schedule-input {
+    background: var(--ui-container-backdrop);
+    color: var(--color-text);
+    cursor: text;
+}
+
+.schedule-select:hover, .btn:hover {
+    background: var(--color-accent);
+    transform: translateY(-1px);
+}
+
+.current-event {
+    background: var(--ui-container-backdrop);
+    padding: calc(var(--spacing) * 2);
+    border-radius: var(--radius-base);
+    margin-bottom: calc(var(--spacing) * 4);
+    backdrop-filter: blur(8px);
+}
+
+.current-event h2 {
+    margin: 0 0 calc(var(--spacing) * 2);
+    font-size: calc(var(--font-base) * 1.5);
+    color: var(--color-secondary);
+}
+
+.event-time, .event-teacher {
+    margin-top: .5em;
+    color: var(--color-text);
+}
+
+.time-remaining {
+    margin-top: calc(var(--spacing));
+    color: var(--color-text);
+    font-weight: 500;
+}
+
+.date-display {
+    font-size: clamp(1.5rem, 2vw, calc(var(--font-base) * 2));
+    margin: calc(var(--spacing) * 2) 0;
+    color: var(--color-secondary);
+    font-weight: 500;
+    text-align: center;
+    background: var(--ui-container-backdrop);
+    padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
+    border-radius: var(--radius-base);
+    backdrop-filter: blur(8px);
 }
 
 .custom-url-controls {
@@ -231,13 +274,11 @@ tr.ongoing {font-weight: bold;}
     gap: calc(var(--spacing));
     width: 100%;
     flex-wrap: wrap;
-    justify-content: center;
 }
 
 #customUrlInput {
     flex: 1;
     min-width: 200px;
-    max-width: 400px;
     padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
     border: none;
     border-radius: var(--radius-base);
