@@ -12,6 +12,7 @@ const MUSIC_SUBJECTS = {
     MAX_TEACHERS: 1,
     MAX_GROUPS: 1,
     CACHE_NAME: "schema-cache",
+    STORAGE_PREFIX: "schema_app_"
   },
   CACHE_CONFIG = { maxAge: 864e5, version: "1.0" },
   FORMATTERS = {
@@ -53,16 +54,35 @@ const MUSIC_SUBJECTS = {
       ].map((e) => [e, document.getElementById(e)])
     )
   );
+
+const getStorageItem = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(CONFIG.STORAGE_PREFIX + key));
+  } catch {
+    return null;
+  }
+};
+
+const setStorageItem = (key, value) => {
+  try {
+    localStorage.setItem(CONFIG.STORAGE_PREFIX + key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 let state = {
   events: [],
   animationFrameId: null,
   isLoading: !1,
   hasError: !1,
   errorMessage: "",
-  customUrls: JSON.parse(localStorage.getItem("customUrls") || "{}"),
+  customUrls: getStorageItem("customUrls") || {},
   isManagingCustomSchemas: false,
-  lastSelectedSchema: localStorage.getItem("lastSelectedSchema") || "mp2"
+  lastSelectedSchema: getStorageItem("lastSelectedSchema") || "mp2"
 };
+
 const debounce = (e, t) => {
     let n;
     return (...r) => {
@@ -276,32 +296,32 @@ async function fetchTimeditSchedule(e) {
   try {
     (state.isLoading = !0), updateUIState();
     const t = await fetch(e);
-    if (!t.ok) throw new Error("Failed to fetch schedule from Timedit");
+    if (!t.ok) throw new Error("Kunde inte hämta schema från Timedit");
     const n = await t.text();
-    localStorage.setItem("current_schedule", n),
-      localStorage.setItem("last_schedule_fetch", Date.now().toString()),
-      (state.events = processEvents(n)),
+    setStorageItem("current_schedule", n);
+    setStorageItem("last_schedule_fetch", Date.now());
+    (state.events = processEvents(n)),
       (state.isLoading = !1),
       (state.hasError = !1),
       updateUIState(),
       updateDisplay(),
       updateScheduleTable();
   } catch (t) {
-    console.error("Error fetching Timedit schedule:", t),
+    console.error("Fel vid hämtning av Timedit-schema:", t),
       (state.isLoading = !1),
       (state.hasError = !0),
       (state.errorMessage =
-        "Failed to fetch schedule. Please try again later."),
+        "Kunde inte hämta schema. Försök igen senare."),
       updateUIState();
   }
 }
 const addCustomUrl = () => {
     const e = DOM_ELEMENTS.customUrlInput.value.trim();
     if (!e) return;
-    const t = prompt("Enter a name for this schedule:");
+    const t = prompt("Ange ett namn för detta schema:");
     if (!t) return;
     (state.customUrls[t] = e),
-      localStorage.setItem("customUrls", JSON.stringify(state.customUrls));
+      setStorageItem("customUrls", state.customUrls);
     const n = document.createElement("option");
     (n.value = `custom_${t}`),
       (n.textContent = t),
@@ -311,11 +331,11 @@ const addCustomUrl = () => {
   removeCustomUrl = () => {
     const e = DOM_ELEMENTS.schemaSelect.value;
     if (!e.startsWith("custom_"))
-      return void alert("Please select a custom schedule to remove");
+      return void alert("Välj ett anpassat schema att ta bort");
     const t = e.replace("custom_", "");
-    confirm(`Are you sure you want to remove the schedule "${t}"?`) &&
+    confirm(`Är du säker på att du vill ta bort schemat "${t}"?`) &&
       (delete state.customUrls[t],
-      localStorage.setItem("customUrls", JSON.stringify(state.customUrls)),
+      setStorageItem("customUrls", state.customUrls),
       DOM_ELEMENTS.schemaSelect.querySelector(`option[value="${e}"]`).remove(),
       (DOM_ELEMENTS.schemaSelect.value = state.lastSelectedSchema),
       switchSchedule(state.lastSelectedSchema));
@@ -327,12 +347,12 @@ const addCustomUrl = () => {
       n && (await fetchTimeditSchedule(n));
     } else await loadSchema(e);
     state.lastSelectedSchema = e;
-    localStorage.setItem("lastSelectedSchema", e);
+    setStorageItem("lastSelectedSchema", e);
   },
   initializeCustomUrls = () => {
-    const savedUrls = localStorage.getItem("customUrls");
+    const savedUrls = getStorageItem("customUrls");
     if (savedUrls) {
-      state.customUrls = JSON.parse(savedUrls);
+      state.customUrls = savedUrls;
       Object.keys(state.customUrls).forEach((e) => {
         const t = document.createElement("option");
         (t.value = `custom_${e}`),
@@ -364,6 +384,5 @@ const cleanupResources = () => {
   state.animationFrameId && cancelAnimationFrame(state.animationFrameId),
     (state.events = []);
 };
-
 // Initial UI state
 updateUIState();
