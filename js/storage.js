@@ -74,3 +74,10 @@ let state = {
   isManagingCustomSchemas: false,
   lastSelectedSchema: getStorageItem("lastSelectedSchema") || "mp2"
 };
+
+// Preselect the last selected schema when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  if (DOM_ELEMENTS.schemaSelect && state.lastSelectedSchema) {
+    DOM_ELEMENTS.schemaSelect.value = state.lastSelectedSchema;
+  }
+});

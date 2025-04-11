@@ -231,3 +231,23 @@ async function fetchTimeditSchedule(e) {
       updateUIState();
   }
 }
+
+// Add this function to initialize the schedule at startup
+async function initializeSchedule() {
+  const storedSchedule = getStorageItem("current_schedule");
+  const lastFetchTime = getStorageItem("last_schedule_fetch");
+  const currentTime = Date.now();
+
+  // Check if stored schedule exists and is not too old (e.g., less than 24 hours)
+  if (storedSchedule && lastFetchTime && (currentTime - lastFetchTime) < 24 * 60 * 60 * 1000) {
+    state.events = processEvents(storedSchedule);
+    updateDisplay();
+    updateScheduleTable();
+  } else {
+    // If no stored schedule or schedule is old, fetch a new one
+    await fetchTimeditSchedule(CONFIG.SCHEDULE_URL);
+  }
+}
+
+// Call initializeSchedule when the application starts
+document.addEventListener('DOMContentLoaded', initializeSchedule);
