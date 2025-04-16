@@ -18,7 +18,16 @@
 html {
     height: 100%;
 }
-
+.footerVersion {
+    color: var(--color-text);
+    font-size: calc(var(--font-base) * 1.6);
+    opacity: 0.7;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    text-align: right;
+    padding: calc(var(--spacing) * 0.5);
+}  
 body {
     font-family: 'Inter', sans-serif;
     margin: 0;
@@ -484,16 +493,7 @@ body {
     background-position:right 10px center;
     padding-right:30px
     }
-    .footerVersion {
-        color: var(--color-text);
-        font-size: calc(var(--font-base) * 1.6);
-        opacity: 0.7;
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        text-align: right;
-        padding: calc(var(--spacing) * 0.5);
-    }  
+   
     @media (max-width: 768px) {
     #schemaSelect {
     max-width:100%
