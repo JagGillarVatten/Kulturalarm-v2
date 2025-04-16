@@ -1,7 +1,5 @@
-/* ============================
-   Root Variables
-   ============================ */
-   :root {
+
+:root {
     --color-primary: #8B4367;
     --color-secondary: hsl(22, 83%, 72%);
     --color-background: #924f5b;
@@ -17,9 +15,6 @@
     --radius-base: 10px;
 }
 
-/* ============================
-   Global Styles
-   ============================ */
 html {
     height: 100%;
 }
@@ -489,9 +484,18 @@ body {
     background-position:right 10px center;
     padding-right:30px
     }
-    
+    .footerVersion {
+        color: var(--color-text);
+        font-size: calc(var(--font-base) * 1.6);
+        opacity: 0.7;
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        text-align: right;
+        padding: calc(var(--spacing) * 0.5);
+    }  
     @media (max-width: 768px) {
     #schemaSelect {
     max-width:100%
     }
-    }
+     }

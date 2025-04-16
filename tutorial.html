@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Kulturalarm-v2 Handledning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #6a3131;
+        }
+        h2 {
+            color: #666;
+        }
+        ol {
+            padding-left: 30px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #0b0707;
+            margin: 10px 0;
+        }
+        .language-selector {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #6a3131;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <a href="#" onclick="switchLanguage('sv')">Svenska</a> | 
+        <a href="#" onclick="switchLanguage('en')">English</a>
+    </div>
+
+    <a href="../" class="back-button">← Tillbaka</a>
+
+    <div id="swedish-content">
+        <h1>Kulturalarm-v2</h1>
+        
+        <h2>Instruktioner för att lägga till ditt schema</h2>
+        
+        <ol>
+            <li>Gå till TimeEdit och öppna ditt personliga schema</li>
+            <li>Klicka på knappen "Prenumerera"</li>
+            <img src="tutorial1.png" alt="Prenumerera knapp">
+            
+            <li>I rutan som visas, klicka på "Kopiera"-knappen</li>
+            <img src="tutorial2.png" alt="Kopiera länk">
+            
+            <li>Öppna Kulturalarm v2</li>
+            <li>Gå till "Hantera scheman"</li>
+            <li>Klistra in den kopierade länken i textrutan</li>
+            <li>Klicka på "Lägg till URL"</li>
+            <li>Namnge ditt schema</li>
+        </ol>
+        
+        <p>Klart! Nu har du lagt till ditt personliga schema i Kulturalarm v2.</p>
+    </div>
+
+    <div id="english-content" style="display:none;">
+        <h1>Kulturalarm-v2</h1>
+        
+        <h2>Instructions for Adding Your Schedule</h2>
+        
+        <ol>
+            <li>Go to TimeEdit and open your personal schedule</li>
+            <li>Click the "Prenumerera" button</li>
+            <img src="tutorial1.png" alt="Subscribe button">
+            
+            <li>In the popup window, click the "Copy" button</li>
+            <img src="tutorial2.png" alt="Copy link">
+            
+            <li>Open Kulturalarm v2</li>
+            <li>Go to "Hantera scheman"</li>
+            <li>Paste the copied link into the text box</li>
+            <li>Click "Lägg till schema"</li>
+            <li>Name your schedule</li>
+        </ol>
+        
+        <p>Done! You have now added your personal schedule to Kulturalarm v2.</p>
+    </div>
+
+    <script>
+        function switchLanguage(lang) {
+            if (lang === 'sv') {
+                document.getElementById('swedish-content').style.display = 'block';
+                document.getElementById('english-content').style.display = 'none';
+                document.documentElement.lang = 'sv';
+            } else {
+                document.getElementById('swedish-content').style.display = 'none';
+                document.getElementById('english-content').style.display = 'block';
+                document.documentElement.lang = 'en';
+            }
+        }
+    </script>
+</body>
+</html>

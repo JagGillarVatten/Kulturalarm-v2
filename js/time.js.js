@@ -1,111 +1,109 @@
-const debounce = (e, t) => {
-    let n;
-    return (...r) => {
-      clearTimeout(n), (n = setTimeout(() => e(...r), t));
+const debounce = (callback, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId), (timeoutId = setTimeout(() => callback(...args), delay));
     };
   },
-  formatTimeRemaining = (e) =>
-    e < 6e4
-      ? `${Math.floor(e / 1e3)}s`
-      : ((t = Math.floor(e / 6e4)),
-        (n = Math.floor(t / 60)),
-        n > 0 ? `${n}t ${t % 60}m` : `${t}m`);
-var t, n;
+  formatTimeRemaining = (milliseconds) =>
+    milliseconds < 6e4
+      ? `${Math.floor(milliseconds / 1e3)}s`
+      : ((minutes = Math.floor(milliseconds / 6e4)),
+        (hours = Math.floor(minutes / 60)),
+        hours > 0 ? `${hours}t ${minutes % 60}m` : `${minutes}m`);
+var minutes, hours;
 
 const updateClock = () => {
-    const e = new Date(),
-      t = e.getSeconds(),
-      n = e.getMinutes(),
-      r = e.getHours() % 12;
-    (DOM_ELEMENTS.hour.style.transform = `rotate(${30 * r + n / 2}deg)`),
-      (DOM_ELEMENTS.minute.style.transform = `rotate(${6 * n}deg)`),
-      (DOM_ELEMENTS.second.style.transform = `rotate(${6 * t}deg)`),
-      (DOM_ELEMENTS.digitalClock.textContent = `${e
+    const currentDate = new Date(),
+      seconds = currentDate.getSeconds(),
+      minutes = currentDate.getMinutes(),
+      hours = currentDate.getHours() % 12;
+    (DOM_ELEMENTS.hour.style.transform = `rotate(${30 * hours + minutes / 2}deg)`),
+      (DOM_ELEMENTS.minute.style.transform = `rotate(${6 * minutes}deg)`),
+      (DOM_ELEMENTS.second.style.transform = `rotate(${6 * seconds}deg)`),
+      (DOM_ELEMENTS.digitalClock.textContent = `${currentDate
         .getHours()
         .toString()
-        .padStart(2, "0")}:${n.toString().padStart(2, "0")}`);
+        .padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
   },
-  parseEventInfo = (e, t = "") => {
+  parseEventInfo = (eventSummary, eventDescription = "") => {
     try {
-      const n = e.split(",").map((e) => e.trim()),
-        r = n[0].replace(/(?:AML|LA|MP)\d+[a-d]?/gi, '').trim(),
-        s = n.find((e) => !e.match(/AML|MP|LA/)) || "",
-        a = /(?:AM|LA|MP)\d+[a-d]?/g,
-        o = e.match(a) || [],
-        i = t.match(a) || [],
-        c = [...new Set([...o, ...i])].map((e) => {
-          const t = e.match(/\d+/),
-            n = e.match(/[a-d]$/),
-            r = t ? t[0] : "",
-            s = n ? n[0].toLowerCase() : "",
-            a = [];
+      const eventParts = eventSummary.split(",").map((part) => part.trim()),
+        courseName = eventParts[0].replace(/(?:AML|LA|MP)\d+[a-d]?/gi, '').trim(),
+        teacher = eventParts.find((part) => !part.match(/AML|MP|LA/)) || "",
+        courseCodePattern = /(?:AM|LA|MP)\d+[a-d]?/g,
+        summaryCourseCodes = eventSummary.match(courseCodePattern) || [],
+        descriptionCourseCodes = eventDescription.match(courseCodePattern) || [],
+        uniqueCourseCodes = [...new Set([...summaryCourseCodes, ...descriptionCourseCodes])].map((courseCode) => {
+          const numberMatch = courseCode.match(/\d+/),
+            letterMatch = courseCode.match(/[a-d]$/),
+            courseNumber = numberMatch ? numberMatch[0] : "",
+            courseLetter = letterMatch ? letterMatch[0].toLowerCase() : "",
+            courseVariants = [];
           
-          if (e.includes("AML")) {
-            a.push(`AM${r}`);
-            a.push(`LA${r}`);
-            a.push(`MP${r}`);
+          if (courseCode.includes("AML")) {
+            courseVariants.push(`AM${courseNumber}`);
+            courseVariants.push(`LA${courseNumber}`);
+            courseVariants.push(`MP${courseNumber}`);
           } else {
-            if (e.includes("AM")) a.push(`AM${r}`);
-            if (e.includes("LA")) a.push(`LA${r}`);
-            if (e.includes("MP")) a.push(`MP${r}`);
+            if (courseCode.includes("AM")) courseVariants.push(`AM${courseNumber}`);
+            if (courseCode.includes("LA")) courseVariants.push(`LA${courseNumber}`);
+            if (courseCode.includes("MP")) courseVariants.push(`MP${courseNumber}`);
           }
 
-          return s ? `${a.join(" ")} ${s}` : a.join(" ");
+          return courseLetter ? `${courseVariants.join(" ")} ${courseLetter}` : courseVariants.join(" ");
         });
       return {
-        courseName: r || "Okänd aktivitet",
-        teacher: s,
-        groups: c,
-        rawDescription: t,
+        courseName: courseName || "Okänd aktivitet",
+        teacher: teacher,
+        groups: uniqueCourseCodes,
+        rawDescription: eventDescription,
       };
-    } catch (n) {
-      return (
-        console.error("Error parsing event info:", n),
-        {
-          courseName: e.replace(/(?:AM|LA|MP)\d+[a-d]?/gi, '').trim() || "Okänd aktivitet",
-          teacher: "",
-          groups: [],
-          rawDescription: t,
-        }
-      );
+    } catch (error) {
+      console.error("Error parsing event info:", error);
+      return {
+        courseName: eventSummary.replace(/(?:AM|LA|MP)\d+[a-d]?/gi, '').trim() || "Okänd aktivitet",
+        teacher: "",
+        groups: [],
+        rawDescription: eventDescription,
+      };
     }
   },
-  processEvents = (e) =>
-    new ICAL.Component(ICAL.parse(e))
+  processEvents = (calendarData) =>
+    new ICAL.Component(ICAL.parse(calendarData))
       .getAllSubcomponents("vevent")
-      .map((e) => {
-        const t = new ICAL.Event(e),
-          n = e.getFirstPropertyValue("description") || "";
+      .map((eventComponent) => {
+        const event = new ICAL.Event(eventComponent),
+          eventDescription = eventComponent.getFirstPropertyValue("description") || "";
         return {
-          ...parseEventInfo(t.summary, n),
-          startDate: t.startDate.toJSDate(),
-          endDate: t.endDate.toJSDate(),
+          ...parseEventInfo(event.summary, eventDescription),
+          startDate: event.startDate.toJSDate(),
+          endDate: event.endDate.toJSDate(),
         };
       })
-      .reduce((e, t) => {
-        const n = e.find(
-          (e) =>
-            (t.startDate >= e.startDate && t.startDate <= e.endDate) ||
-            (t.endDate >= e.startDate && t.endDate <= e.endDate)
+      .reduce((processedEvents, currentEvent) => {
+        const overlappingEvent = processedEvents.find(
+          (existingEvent) =>
+            (currentEvent.startDate >= existingEvent.startDate && currentEvent.startDate <= existingEvent.endDate) ||
+            (currentEvent.endDate >= existingEvent.startDate && currentEvent.endDate <= existingEvent.endDate)
         );
-        return n
-          ? (n.courseName === t.courseName
-              ? ((n.teacher = [n.teacher, t.teacher]
+        return overlappingEvent
+          ? (overlappingEvent.courseName === currentEvent.courseName
+              ? ((overlappingEvent.teacher = [overlappingEvent.teacher, currentEvent.teacher]
                   .filter(Boolean)
                   .join(", ")),
-                (n.groups = [...new Set([...n.groups, ...t.groups])]))
-              : ((n.courseName += ` / ${t.courseName}`),
-                (n.teacher = [n.teacher, t.teacher].filter(Boolean).join(", ")),
-                (n.groups = [...new Set([...n.groups, ...t.groups])])),
-            e)
-          : [...e, t];
+                (overlappingEvent.groups = [...new Set([...overlappingEvent.groups, ...currentEvent.groups])]))
+              : ((overlappingEvent.courseName += ` / ${currentEvent.courseName}`),
+                (overlappingEvent.teacher = [overlappingEvent.teacher, currentEvent.teacher].filter(Boolean).join(", ")),
+                (overlappingEvent.groups = [...new Set([...overlappingEvent.groups, ...currentEvent.groups])])),
+            processedEvents)
+          : [...processedEvents, currentEvent];
       }, [])
-      .sort((e, t) => e.startDate - t.startDate),
+      .sort((a, b) => a.startDate - b.startDate),
   updateUIState = () => {
     document
       .querySelectorAll(".schedule-table, .current-event")
-      .forEach((e) => {
-        e.classList.toggle("loading", state.isLoading);
+      .forEach((element) => {
+        element.classList.toggle("loading", state.isLoading);
       }),
       (DOM_ELEMENTS.scheduleError.style.display = state.hasError
         ? "flex"
@@ -114,44 +112,47 @@ const updateClock = () => {
         (DOM_ELEMENTS.scheduleErrorText.textContent = state.errorMessage);
     
     DOM_ELEMENTS.customUrlContainer.style.display = state.isManagingCustomSchemas ? "flex" : "none";
-  },
-  updateDisplay = (() => {
-    let e = 0;
-    const t = () => {
-      const n = new Date();
-      if (!(n - e < CONFIG.REFRESH_INTERVAL)) {
-        (e = n),
-          (DOM_ELEMENTS.dateDisplay.textContent = FORMATTERS.date.format(n));
-        const r = state.events.find((e) => n >= e.startDate && n <= e.endDate),
-          s = state.events.find((e) => n < e.startDate);
+  }
+  const updateDisplay = (() => {
+    let lastUpdateTime = 0;
+    const updateDisplayContent = () => {
+      const currentTime = new Date();
+      if (!(currentTime - lastUpdateTime < CONFIG.REFRESH_INTERVAL)) {
+        (lastUpdateTime = currentTime),
+          (DOM_ELEMENTS.dateDisplay.textContent = FORMATTERS.date.format(currentTime));
+        const currentEvent = state.events.find((event) => currentTime >= event.startDate && currentTime <= event.endDate),
+          nextEvent = state.events.find((event) => {
+            const timeDiff = event.startDate - currentTime;
+            return currentTime < event.startDate && timeDiff < 24 * 60 * 60 * 1000; // Less than 24 hours
+          });
         if (
-          (r && r.courseName.toLowerCase() !== "lunch"
+          (currentEvent && currentEvent.courseName.toLowerCase() !== "lunch"
             ? ((DOM_ELEMENTS.eventStatus.textContent = "● Pågår nu"),
               (DOM_ELEMENTS.eventStatus.className =
                 "event-status status-ongoing"),
-              (DOM_ELEMENTS.eventName.textContent = r.courseName),
+              (DOM_ELEMENTS.eventName.textContent = currentEvent.courseName),
               (DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
-                ? r.teacher
+                ? currentEvent.teacher
                 : ""),
               (DOM_ELEMENTS.eventTime.textContent = `Slutar ${FORMATTERS.time.format(
-                r.endDate
+                currentEvent.endDate
               )}`),
               (DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(
-                r.endDate - n
+                currentEvent.endDate - currentTime
               )))
-            : s
+            : nextEvent
             ? ((DOM_ELEMENTS.eventStatus.textContent = "○ Kommande"),
               (DOM_ELEMENTS.eventStatus.className =
                 "event-status status-upcoming"),
-              (DOM_ELEMENTS.eventName.textContent = s.courseName),
+              (DOM_ELEMENTS.eventName.textContent = nextEvent.courseName),
               (DOM_ELEMENTS.eventTeacher.textContent = CONFIG.SHOW_TEACHERS
-                ? s.teacher
+                ? nextEvent.teacher
                 : ""),
               (DOM_ELEMENTS.eventTime.textContent = `Börjar ${FORMATTERS.time.format(
-                s.startDate
+                nextEvent.startDate
               )}`),
               (DOM_ELEMENTS.timeRemaining.textContent = formatTimeRemaining(
-                s.startDate - n
+                nextEvent.startDate - currentTime
               )))
             : ((DOM_ELEMENTS.eventStatus.textContent =
                 "Inga fler aktiviteter idag"),
@@ -161,45 +162,45 @@ const updateClock = () => {
               (DOM_ELEMENTS.eventTeacher.textContent = ""),
               (DOM_ELEMENTS.eventTime.textContent = ""),
               (DOM_ELEMENTS.timeRemaining.textContent = "")),
-          r && r.courseName.toLowerCase() !== "lunch")
+          currentEvent && currentEvent.courseName.toLowerCase() !== "lunch")
         ) {
-          const e = r.endDate - r.startDate,
-            t = ((n - r.startDate) / e) * 100;
-          DOM_ELEMENTS.progressBar.style.width = `${t}%`;
+          const eventDuration = currentEvent.endDate - currentEvent.startDate,
+            progressPercentage = ((currentTime - currentEvent.startDate) / eventDuration) * 100;
+          DOM_ELEMENTS.progressBar.style.width = `${progressPercentage}%`;
         } else DOM_ELEMENTS.progressBar.style.width = "0";
       }
     };
     return (
-      requestAnimationFrame(function e() {
-        t(), (state.animationFrameId = requestAnimationFrame(e));
+      requestAnimationFrame(function animationLoop() {
+        updateDisplayContent(), (state.animationFrameId = requestAnimationFrame(animationLoop));
       }),
-      t
+      updateDisplayContent
     );
-  })(),
+  })();
   updateScheduleTable = () => {
     if (!DOM_ELEMENTS.scheduleBody) return;
-    const e = new Date(),
-      t = new Date(e);
-    t.setHours(0, 0, 0, 0);
-    const n = new Date(e);
-    n.setHours(23, 59, 59, 999),
+    const currentDate = new Date(),
+      startOfDay = new Date(currentDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(currentDate);
+    endOfDay.setHours(23, 59, 59, 999),
       (DOM_ELEMENTS.scheduleBody.innerHTML = state.events
         .filter(
-          (e) =>
-            (e.startDate >= t && e.startDate <= n) ||
-            (e.endDate >= t && e.endDate <= n) ||
-            (e.startDate <= t && e.endDate >= n)
+          (event) =>
+            (event.startDate >= startOfDay && event.startDate <= endOfDay) ||
+            (event.endDate >= startOfDay && event.endDate <= endOfDay) ||
+            (event.startDate <= startOfDay && event.endDate >= endOfDay)
         )
-        .map((t) => {
-          const n = FORMATTERS.time.format(t.startDate),
-            r = FORMATTERS.time.format(t.endDate);
+        .map((event) => {
+          const startTime = FORMATTERS.time.format(event.startDate),
+            endTime = FORMATTERS.time.format(event.endDate);
           return `<tr class="${
-            e >= t.startDate && e <= t.endDate ? "current" : ""
-          }"><td>${n} - ${r}</td><td>${
-            t.courseName
+            currentDate >= event.startDate && currentDate <= event.endDate ? "current" : ""
+          }"><td>${startTime} - ${endTime}</td><td>${
+            event.courseName
           }</td><td>${formatTimeRemaining(
-            t.endDate - t.startDate
-          )}</td><td>${t.groups
+            event.endDate - event.startDate
+          )}</td><td>${event.groups
             .slice(0, CONFIG.MAX_GROUPS)
             .join(", ")}</td></tr>`;
         })
@@ -208,22 +209,25 @@ const updateClock = () => {
   toggleSchedule = () => {
     document.querySelector(".schedule-table").classList.toggle("visible");
   };
-async function fetchTimeditSchedule(e) {
+async function fetchTimeditSchedule(scheduleUrl) {
   try {
     (state.isLoading = !0), updateUIState();
-    const t = await fetch(e);
-    if (!t.ok) throw new Error("Kunde inte hämta schema från Timedit");
-    const n = await t.text();
-    setStorageItem("current_schedule", n);
+    const response = await fetch(scheduleUrl);
+    if (!response.ok) {
+      console.error(`Failed to fetch schedule: HTTP ${response.status} - ${response.statusText}`);
+      throw new Error("Kunde inte hämta schema från Timedit");
+    }
+    const calendarData = await response.text();
+    setStorageItem("current_schedule", calendarData);
     setStorageItem("last_schedule_fetch", Date.now());
-    (state.events = processEvents(n)),
+    (state.events = processEvents(calendarData)),
       (state.isLoading = !1),
       (state.hasError = !1),
       updateUIState(),
       updateDisplay(),
       updateScheduleTable();
-  } catch (t) {
-    console.error("Fel vid hämtning av Timedit-schema:", t),
+  } catch (error) {
+    console.error("Fel vid hämtning av Timedit-schema:", error),
       (state.isLoading = !1),
       (state.hasError = !0),
       (state.errorMessage =
@@ -232,22 +236,22 @@ async function fetchTimeditSchedule(e) {
   }
 }
 
-// Add this function to initialize the schedule at startup
 async function initializeSchedule() {
-  const storedSchedule = getStorageItem("current_schedule");
-  const lastFetchTime = getStorageItem("last_schedule_fetch");
-  const currentTime = Date.now();
+  try {
+    const storedSchedule = getStorageItem("current_schedule");
+    const lastFetchTime = getStorageItem("last_schedule_fetch");
+    const currentTime = Date.now();
 
-  // Check if stored schedule exists and is not too old (e.g., less than 24 hours)
-  if (storedSchedule && lastFetchTime && (currentTime - lastFetchTime) < 24 * 60 * 60 * 1000) {
-    state.events = processEvents(storedSchedule);
-    updateDisplay();
-    updateScheduleTable();
-  } else {
-    // If no stored schedule or schedule is old, fetch a new one
-    await fetchTimeditSchedule(CONFIG.SCHEDULE_URL);
+    if (storedSchedule && lastFetchTime && (currentTime - lastFetchTime) < 24 * 60 * 60 * 1000) {
+      state.events = processEvents(storedSchedule);
+      updateDisplay();
+      updateScheduleTable();
+    } else {
+      await fetchTimeditSchedule(CONFIG.SCHEDULE_URL);
+    }
+  } catch (error) {
+    console.error("Error initializing schedule:", error);
   }
 }
 
-// Call initializeSchedule when the application starts
 document.addEventListener('DOMContentLoaded', initializeSchedule);
